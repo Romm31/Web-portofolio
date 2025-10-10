@@ -1,103 +1,131 @@
-import Image from "next/image";
+// src/app/page.tsx
 
-export default function Home() {
+"use client" // Karena menggunakan Framer Motion
+
+import { motion } from "framer-motion"
+import { Navbar } from "@/components/navbar"
+import { Button } from "@/components/ui/button"
+import { Card, CardHeader, CardContent, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
+import Link from "next/link"
+
+// Data Proyek Dummy
+const projects = [
+  { id: 1, title: "Next.js E-Commerce Platform", description: "Full-stack e-commerce solution built with Next.js, Vercel PostgreS, and Stripe.", tags: ["Next.js", "PostgreSQL", "Tailwind"], link: "#" },
+  { id: 2, title: "Personal Blogging Site (MDX)", description: "A high-performance blog using MDX for content management and search functionality.", tags: ["React", "MDX", "SEO"], link: "#" },
+  { id: 3, title: "Real-time Chat App", description: "Built a scalable WebSocket chat application using React and Node.js.", tags: ["React", "Node.js", "WebSocket"], link: "#" },
+]
+
+// Varian Animasi untuk Hero Section
+const heroVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { 
+      duration: 0.8, 
+      staggerChildren: 0.2 
+    } 
+  }
+}
+
+// Varian Animasi untuk item Proyek
+const projectItemVariants = {
+  hidden: { opacity: 0, scale: 0.9 },
+  visible: { opacity: 1, scale: 1 }
+}
+
+export default function HomePage() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="min-h-screen">
+      <Navbar />
+      
+      <main>
+        {/* Hero Section */}
+        <motion.section 
+          id="hero" 
+          className="container py-24 text-center"
+          variants={heroVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <motion.h1 
+            className="text-5xl font-extrabold tracking-tight sm:text-6xl lg:text-7xl"
+            variants={heroVariants}
+          >
+            Halo, Saya <span className="text-primary">Rommel</span>
+          </motion.h1>
+          <motion.p 
+            className="mt-4 text-xl text-muted-foreground"
+            variants={heroVariants}
+          >
+            Developer Next.js, Ahli dalam UI Modern (Tailwind CSS & shadcn)
+          </motion.p>
+          <motion.div 
+            className="mt-8 space-x-4"
+            variants={heroVariants}
+          >
+            <Button size="lg" asChild>
+              <Link href="#projects">Lihat Proyek</Link>
+            </Button>
+            <Button variant="outline" size="lg" asChild>
+              <Link href="#contact">Hubungi Saya</Link>
+            </Button>
+          </motion.div>
+        </motion.section>
+        
+        {/* Projects Section */}
+        <section id="projects" className="container py-16">
+          <h2 className="text-4xl font-bold mb-10 text-center border-b pb-4">Latest Projects</h2>
+          
+          <motion.div 
+            className="grid gap-8 md:grid-cols-3"
+            initial="hidden"
+            whileInView="visible" // Animasi dipicu saat masuk viewport
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ staggerChildren: 0.1 }}
+          >
+            {projects.map((project, index) => (
+              <motion.div key={project.id} variants={projectItemVariants}>
+                <Card className="h-full flex flex-col">
+                  <CardHeader>
+                    <CardTitle>{project.title}</CardTitle>
+                    <CardDescription>{project.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex-grow">
+                    <div className="flex flex-wrap gap-2">
+                      {project.tags.map((tag) => (
+                        <span key={tag} className="px-2 py-1 text-xs font-medium rounded-full bg-secondary text-secondary-foreground">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <Button variant="link" asChild>
+                      <Link href={project.link}>View Project →</Link>
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </motion.div>
+            ))}
+          </motion.div>
+        </section>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
+        {/* Placeholder Sections */}
+        <section id="skills" className="container py-16 h-[50vh]">
+          <h2 className="text-4xl font-bold mb-4 border-b pb-2">Skills</h2>
+          <p className="text-muted-foreground">Bagian untuk daftar skill Anda (misalnya: React, Next.js, TypeScript, Docker).</p>
+        </section>
+
+        <section id="contact" className="container py-16 h-[50vh]">
+          <h2 className="text-4xl font-bold mb-4 border-b pb-2">Contact</h2>
+          <p className="text-muted-foreground">Bagian untuk form kontak (sangat disarankan menggunakan React Hook Form + Zod).</p>
+        </section>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+      
+      <footer className="w-full border-t py-6 text-center text-sm text-muted-foreground">
+        &copy; {new Date().getFullYear()} Rommel. Made with Next.js, Tailwind, and shadcn.
       </footer>
     </div>
-  );
+  )
 }
