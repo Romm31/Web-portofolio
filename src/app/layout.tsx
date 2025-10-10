@@ -1,10 +1,10 @@
-// src/app/layout.tsx
+// src/app/layout.tsx (Update)
 
 import type { Metadata } from "next"
-// Kita asumsikan Anda menggunakan font Inter atau bisa diganti sesuai selera
 import { Inter } from "next/font/google" 
 import "./globals.css"
-import { ThemeProvider } from "@/components/theme-provider" // Import ThemeProvider
+import { ThemeProvider } from "@/components/theme-provider"
+import { SmoothScrollProvider } from "@/components/smooth-scroll-provider" // Import Lenis
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -22,12 +22,16 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider
-          attribute="class" // Mode gelap/terang ditandai dengan class 'dark'
-          defaultTheme="system" // Default ke mode system/perangkat
-          enableSystem // Aktifkan fitur system theme
+          attribute="class"
+          defaultTheme="system" 
+          enableSystem 
           disableTransitionOnChange
         >
-          {children}
+          {/* Tambahkan SmoothScrollProvider di sini */}
+          <SmoothScrollProvider> 
+            {children}
+          </SmoothScrollProvider>
+
         </ThemeProvider>
       </body>
     </html>
