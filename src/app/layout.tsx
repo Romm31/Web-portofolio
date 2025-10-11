@@ -1,15 +1,15 @@
-// src/app/layout.tsx (Update)
+// src/app/layout.tsx (Final Fix)
 
 import type { Metadata } from "next"
-import { Inter } from "next/font/google" 
+import { Inter } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
-import { SmoothScrollProvider } from "@/components/smooth-scroll-provider" // Import Lenis
+import { SmoothScrollProvider } from "@/components/smooth-scroll-provider"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Portofolio Rommel",
+  title: "Erwin Wijaya",
   description: "Portofolio Developer Next.js & shadcn",
 }
 
@@ -20,18 +20,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      </head>
       <body className={inter.className}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system" 
-          enableSystem 
+          defaultTheme="system"
+          enableSystem
           disableTransitionOnChange
         >
-          {/* Tambahkan SmoothScrollProvider di sini */}
-          <SmoothScrollProvider> 
-            {children}
-          </SmoothScrollProvider>
-
+          <SmoothScrollProvider>{children}</SmoothScrollProvider>
         </ThemeProvider>
       </body>
     </html>

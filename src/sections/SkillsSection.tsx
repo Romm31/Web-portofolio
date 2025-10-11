@@ -1,8 +1,10 @@
+// src/sections/SkillsSection.tsx
 "use client"
 
 import { motion, Variants } from "framer-motion"
 import { Separator } from "@/components/ui/separator"
-import { visualSkillData } from "@/data/portfolio"
+// Pastikan visualSkillData diimpor dari file data
+import { visualSkillData } from "@/data/portfolio" 
 import { VisualSkillCard } from "@/components/visual-skill-card"
 
 const containerVariants: Variants = {
@@ -29,10 +31,11 @@ const itemVariants: Variants = {
 export default function SkillsSection() {
   return (
     <section id="skills" className="relative py-20 sm:py-28">
+      {/* Background Effect - Tetap di sini */}
       <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background via-background/90 to-background" />
 
       <motion.div
-        className="container mx-auto px-5 sm:px-8 max-w-5xl text-center"
+        className="container mx-auto max-w-5xl text-center" // Gunakan container Tailwind untuk padding yang konsisten
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.15 }}
@@ -49,18 +52,19 @@ export default function SkillsSection() {
           {/* FRONTEND */}
           <motion.div variants={itemVariants} className="space-y-6">
             <div className="flex flex-col items-center border-b border-border/30 pb-3">
-              <h3 className="text-lg sm:text-xl font-semibold text-center">
+              <h3 className="text-xl sm:text-2xl font-semibold text-center text-primary">
                 Frontend & Design
               </h3>
               <Separator className="w-24 mt-2 opacity-40" />
             </div>
-            <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
+            <div className="flex flex-wrap justify-center gap-3 sm:gap-4"> {/* Gap lebih rapat di mobile */}
               {visualSkillData.frontend.map((skill) => (
                 <motion.div
                   key={skill.name}
                   whileHover={{ scale: 1.08 }}
                   transition={{ duration: 0.2 }}
-                  className="hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.25)] transition-all"
+                  // Gunakan class group untuk drop shadow yang lebih halus dan adaptif
+                  className="group hover:drop-shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)] transition-all" 
                 >
                   <VisualSkillCard {...skill} />
                 </motion.div>
@@ -71,18 +75,18 @@ export default function SkillsSection() {
           {/* BACKEND */}
           <motion.div variants={itemVariants} className="space-y-6">
             <div className="flex flex-col items-center border-b border-border/30 pb-3">
-              <h3 className="text-lg sm:text-xl font-semibold text-center">
+              <h3 className="text-xl sm:text-2xl font-semibold text-center text-primary">
                 Backend & Languages
               </h3>
               <Separator className="w-24 mt-2 opacity-40" />
             </div>
-            <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
+            <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
               {visualSkillData.backend.map((skill) => (
                 <motion.div
                   key={skill.name}
                   whileHover={{ scale: 1.08 }}
                   transition={{ duration: 0.2 }}
-                  className="hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.25)] transition-all"
+                  className="group hover:drop-shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)] transition-all"
                 >
                   <VisualSkillCard {...skill} />
                 </motion.div>
@@ -93,18 +97,18 @@ export default function SkillsSection() {
           {/* DEVOPS */}
           <motion.div variants={itemVariants} className="space-y-6">
             <div className="flex flex-col items-center border-b border-border/30 pb-3">
-              <h3 className="text-lg sm:text-xl font-semibold text-center">
+              <h3 className="text-xl sm:text-2xl font-semibold text-center text-primary">
                 Infrastructure & DevOps
               </h3>
               <Separator className="w-24 mt-2 opacity-40" />
             </div>
-            <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
+            <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
               {visualSkillData.infrastructure.map((skill) => (
                 <motion.div
                   key={skill.name}
                   whileHover={{ scale: 1.08 }}
                   transition={{ duration: 0.2 }}
-                  className="hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.25)] transition-all"
+                  className="group hover:drop-shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)] transition-all"
                 >
                   <VisualSkillCard {...skill} />
                 </motion.div>

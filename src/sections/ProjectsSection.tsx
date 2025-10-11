@@ -1,3 +1,4 @@
+// src/sections/ProjectsSection.tsx
 "use client"
 
 import { useRef } from "react"
@@ -28,7 +29,8 @@ const itemVariants: Variants = {
 
 const SectionTitle = ({ children }: { children: React.ReactNode }) => (
   <motion.h2
-    className="text-3xl sm:text-4xl font-extrabold mb-10 text-center sm:text-left tracking-tight"
+    // Perbaikan: Hapus text-center jika tidak diperlukan
+    className="text-3xl sm:text-4xl font-extrabold mb-10 text-center tracking-tight"
     initial={{ opacity: 0, y: 20 }}
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: true }}
@@ -43,6 +45,7 @@ export default function ProjectsSection() {
 
   const scroll = (direction: "left" | "right") => {
     if (!scrollRef.current) return
+    // Scroll 80% dari lebar container untuk navigasi yang halus
     const scrollAmount = scrollRef.current.clientWidth * 0.8
     scrollRef.current.scrollBy({
       left: direction === "left" ? -scrollAmount : scrollAmount,
@@ -63,7 +66,7 @@ export default function ProjectsSection() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <SectionTitle>Featured Projects</SectionTitle>
-          <Button variant="link" size="sm" asChild className="text-primary hover:underline font-semibold">
+          <Button variant="link" size="sm" asChild className="text-primary hover:underline font-semibold flex-shrink-0">
             <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">
               View All on GitHub <FaGithub className="w-4 h-4 ml-2 inline" />
             </a>
@@ -72,10 +75,11 @@ export default function ProjectsSection() {
 
         {/* Horizontal Scroll Section */}
         <div className="relative group">
-          {/* Tombol Panah Kiri */}
+          {/* Tombol Panah Kiri (Desktop Only, muncul saat hover group) */}
           <button
             onClick={() => scroll("left")}
             className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 border border-border/40 hover:border-primary/60 hover:bg-background p-2 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-all duration-300 z-10"
+            aria-label="Scroll left"
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
@@ -83,16 +87,18 @@ export default function ProjectsSection() {
           {/* Container Scroll */}
           <motion.div
             ref={scrollRef}
-            variants={itemVariants}
-            className="flex gap-6 overflow-x-auto pb-4 snap-x snap-mandatory hide-scrollbar scroll-smooth"
+            // Hapus variants itemVariants dari sini karena sudah diterapkan di elemen child
+            className="flex gap-6 overflow-x-scroll pb-4 snap-x snap-mandatory scroll-smooth hide-scrollbar px-2 md:px-0"
           >
             {projects.slice(0, 6).map((project) => (
               <motion.div
                 key={project.id}
+                variants={itemVariants}
                 whileHover={{ scale: 1.03, y: -4 }}
                 whileTap={{ scale: 0.97 }}
                 transition={{ type: "spring", stiffness: 200, damping: 18 }}
-                className="min-w-[320px] md:min-w-[360px] lg:min-w-[400px] snap-center"
+                // FIX: Gunakan lebar fixed di mobile untuk memicu scroll
+                className="min-w-[80vw] sm:min-w-[320px] md:min-w-[360px] lg:min-w-[400px] snap-start"
               >
                 <Card className="h-full flex flex-col justify-between border border-border/60 bg-card/70 backdrop-blur-sm rounded-xl transition-all duration-300 hover:shadow-lg hover:border-primary/50">
                   <CardHeader className="pb-3">
@@ -132,10 +138,11 @@ export default function ProjectsSection() {
             ))}
           </motion.div>
 
-          {/* Tombol Panah Kanan */}
+          {/* Tombol Panah Kanan (Desktop Only, muncul saat hover group) */}
           <button
             onClick={() => scroll("right")}
             className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 border border-border/40 hover:border-primary/60 hover:bg-background p-2 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-all duration-300 z-10"
+            aria-label="Scroll right"
           >
             <ChevronRight className="w-6 h-6" />
           </button>

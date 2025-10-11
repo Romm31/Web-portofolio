@@ -1,5 +1,4 @@
 // src/app/page.tsx
-// Final version with adaptive gradient & grid background
 
 "use client"
 
@@ -60,6 +59,8 @@ export default function HomePage() {
         animate="visible"
         variants={pageEnterVariant}
       >
+        {/* HERO SECTION - KONTENNYA HARUS DI PUSATKAN! */}
+        {/* Kita akan ubah HeroSection.tsx secara terpisah, tapi pastikan impornya benar. */}
         <HeroSection />
         <Separator className="container" />
 
