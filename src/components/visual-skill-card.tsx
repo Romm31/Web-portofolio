@@ -1,36 +1,46 @@
-// src/components/visual-skill-card.tsx (Perbaikan Simpel)
+// src/components/visual-skill-card.tsx
 
 import React from 'react';
-import { Card } from '@/components/ui/card';
 import { motion } from 'framer-motion';
-import { IconType } from 'react-icons';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"; // Import Tooltip components
+import { cn } from '@/lib/utils'; // Pastikan ini terimport
 
 interface VisualSkillCardProps {
   name: string;
-  Icon: IconType;
+  Icon: React.ElementType; // Menggunakan React.ElementType untuk fleksibilitas icon
   color: string;
+  className?: string; // Tambahkan prop className
 }
 
-const itemVariants = {
-  hidden: { opacity: 0, scale: 0.9 },
-  visible: { opacity: 1, scale: 1, transition: { duration: 0.5 } }
-};
-
-export function VisualSkillCard({ name, Icon, color }: VisualSkillCardProps) {
+export function VisualSkillCard({ name, Icon, color, className }: VisualSkillCardProps) {
   return (
-    <motion.div 
-      variants={itemVariants} 
-      // Hapus w-1/x dan p-2 di sini. Biarkan Grid parent yang mengatur lebar.
-      className="w-full"
-    >
-      <Card 
-        className="flex flex-col items-center justify-center p-4 h-28 
-                   transition-all duration-300 hover:shadow-xl hover:scale-[1.05] 
-                   hover:border-primary border-2 border-transparent"
-      >
-        <Icon className="w-8 h-8 mb-2" style={{ color: color }} />
-        <p className="text-xs font-semibold text-center">{name}</p>
-      </Card>
-    </motion.div>
+    <TooltipProvider delayDuration={200}> {/* Add TooltipProvider */}
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <motion.div
+            className={cn(
+              "flex flex-col items-center justify-center p-3 sm:p-4 border rounded-lg shadow-sm w-fit",
+              "text-center bg-card text-card-foreground hover:bg-card/80 transition-colors",
+              className // Apply custom className
+            )}
+            initial={{ opacity: 0, scale: 0.8 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, amount: 0.8 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+          >
+            <Icon className="h-6 w-6 sm:h-8 sm:w-8 mb-1" style={{ color: color }} />
+            <span className="text-xs sm:text-sm font-medium text-muted-foreground">{name}</span>
+          </motion.div>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{name}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
