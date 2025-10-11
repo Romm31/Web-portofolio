@@ -153,3 +153,12 @@ html {
   animation: gradientMove 6s linear infinite;
   background-size: 200% auto;
 }
+
+/* ====== Hide Horizontal Scrollbar (tanpa matiin scroll) ====== */
+.hide-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE / Edge */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}

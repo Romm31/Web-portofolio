@@ -1,39 +1,43 @@
-// src/components/smooth-scroll-provider.tsx
-
 "use client"
 
-import { ReactNode, useEffect } from 'react';
-import Lenis from '@studio-freight/lenis';
+import { ReactNode, useEffect } from "react"
+import Lenis from "@studio-freight/lenis"
 
 interface SmoothScrollProviderProps {
-  children: ReactNode;
+  children: ReactNode
 }
 
 export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
   useEffect(() => {
-    // Inisialisasi Lenis
     const lenis = new Lenis({
-      duration: 1.2, // Kecepatan scroll (standar: 1.2)
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // Easing function
-      // direction: 'vertical', <-- Dihapus
-      // gestureDirection: 'vertical', <-- Dihapus
-      smoothTouch: false, // Nonaktifkan smooth scroll di touch device (opsional, untuk performa)
-      lerp: 0.1, // Interpolasi (seberapa cepat Lenis mengejar posisi scroll)
-    });
+      duration: 1.1,
+      smoothWheel: true,
+      syncTouch: true,
+      gestureOrientation: "vertical",
+      touchMultiplier: 1.5,
+      infinite: false,
+    })
 
-    // Fungsi loop untuk mengupdate Lenis setiap frame
-    function raf(time: number) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
+    let animationFrame: number
+
+    const raf = (time: number) => {
+      lenis.raf(time)
+      animationFrame = requestAnimationFrame(raf)
     }
 
-    requestAnimationFrame(raf);
+    requestAnimationFrame(raf)
 
-    // Cleanup saat komponen di-unmount
+    if (process.env.NODE_ENV === "development") {
+      lenis.on("scroll", (e: { scroll: number }) => {
+        void e.scroll
+      })
+    }
+
     return () => {
-      lenis.destroy();
-    };
-  }, []);
+      cancelAnimationFrame(animationFrame)
+      lenis.destroy()
+    }
+  }, [])
 
-  return <>{children}</>;
+  return <>{children}</>
 }

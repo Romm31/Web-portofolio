@@ -1,47 +1,32 @@
 // src/components/timeline-item.tsx
-
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Dot } from 'lucide-react'; // Menggunakan ikon Dot sebagai penanda timeline
 
 interface TimelineItemProps {
   year: string | number;
   title: string;
-  organization?: string;
+  organization?: string; // Optional for achievements
   detail: string;
-  isLast: boolean;
+  isLast?: boolean;
 }
 
-// Varian Animasi
 const itemVariants = {
-  hidden: { opacity: 0, x: -50 },
-  visible: { opacity: 1, x: 0, transition: { duration: 0.6 } }
-};
+    hidden: { y: 30, opacity: 0 },
+    visible: { y: 0, opacity: 1, transition: { type: "spring" as const, stiffness: 100, damping: 20 } as const } 
+} as const;
 
 export function TimelineItem({ year, title, organization, detail, isLast }: TimelineItemProps) {
   return (
-    <motion.div 
-      className="flex relative pl-6 pb-8"
-      variants={itemVariants}
-    >
-      {/* Garis Vertikal Timeline */}
-      {!isLast && (
-        <div className="absolute left-[8px] top-[14px] h-full w-0.5 bg-border z-0" />
-      )}
-      
-      {/* Bullet Point / Icon */}
-      <div className="absolute left-0 top-0 z-10 bg-background rounded-full border border-primary text-primary">
-        <Dot className="w-5 h-5" />
+    <motion.div variants={itemVariants} className="mb-8 flex items-start group">
+      <div className="flex flex-col items-center mr-4">
+        <div className="w-3 h-3 rounded-full bg-primary z-10 border-2 border-background flex-shrink-0" />
+        {!isLast && <div className="h-full w-0.5 bg-border -mt-1 flex-grow" />}
       </div>
-
-      {/* Konten */}
-      <div className="flex-1 ml-4 space-y-1">
-        <p className="text-sm font-semibold text-muted-foreground">{year}</p>
-        <h4 className="text-lg font-bold">
-          {title}
-          {organization && <span className="text-primary text-base font-normal block md:inline md:ml-2"> | {organization}</span>}
-        </h4>
-        <p className="text-muted-foreground">{detail}</p>
+      <div className="flex-grow pt-0.5">
+        <p className="text-sm text-muted-foreground">{year}</p>
+        <h4 className="font-semibold text-lg text-foreground group-hover:text-primary transition-colors">{title}</h4>
+        {organization && <p className="text-muted-foreground text-sm">{organization}</p>}
+        <p className="text-sm text-muted-foreground mt-1">{detail}</p>
       </div>
     </motion.div>
   );
