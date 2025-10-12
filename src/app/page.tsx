@@ -172,7 +172,7 @@ export default function HomePage() {
                 className="text-xl font-black tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent"
                 whileHover={{ scale: 1.05 }}
               >
-                Erwin Wijaya
+                Erwin
               </motion.h4>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 {FOOTER_BIO}

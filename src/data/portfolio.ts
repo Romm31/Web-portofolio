@@ -130,16 +130,28 @@ export const internshipData = [
 
 export const organizationData = [
   {
+  year: "2024 - Present",
+  title: "Tenesys",
+  organization: "Universitas Teknokrat Indonesia",
+  detail: "Active member in Tenesys with role as a CTF Player, Challenge Developer, Infrastructure Engineer, and Mentor.",
+  },
+  {
     year: "2024 - Present",
-    title: "Programming Student Activity Unit",
+    title: "Programming Teknokrat",
     organization: "Universitas Teknokrat Indonesia",
     detail: "Active member in the Programming Student Activity Unit.",
   },
   {
-    year: "2022 - 2023",
-    title: "Intra-School Organization",
-    organization: "SMKN 1 Bandar Lampung",
-    detail: "Organizational experience at the school level.",
+  year: "2022 - 2024",
+  title: "Basketball Extracurricular",
+  organization: "SMKN 1 Bandar Lampung",
+  detail: "Active member and participant in inter-school competitions.",
+  },
+  {
+  year: "2022 - 2023",
+  title: "Organisasi Siswa Intra Sekolah",
+  organization: "SMKN 1 Bandar Lampung",
+  detail: "Organizational experience at the school level.",
   },
 ] as const
 

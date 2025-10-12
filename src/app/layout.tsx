@@ -1,4 +1,4 @@
-// src/app/layout.tsx (Final Fix)
+// src/app/layout.tsx
 
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
@@ -11,6 +11,9 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "Erwin Wijaya",
   description: "Portofolio Developer Next.js & shadcn",
+  icons: {
+    icon: "/logo/logo.png", 
+  },
 }
 
 export default function RootLayout({
@@ -22,6 +25,8 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="icon" href="/logo/logo.png" type="image/png" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
       </head>
       <body className={inter.className}>
         <ThemeProvider
@@ -30,7 +35,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <SmoothScrollProvider>{children}</SmoothScrollProvider>
+          <SmoothScrollProvider>
+            {children}
+          </SmoothScrollProvider>
         </ThemeProvider>
       </body>
     </html>
