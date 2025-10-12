@@ -215,7 +215,7 @@ export default function HomePage() {
               <h4 className="text-lg font-bold tracking-tight">Quick Links</h4>
               <ul className="space-y-3">
                 {[
-                  { href: "/notes", label: "Notes" },
+                  { href: "/blog", label: "Notes" },
                   { href: "#projects", label: "Projects" },
                   { href: "#skills", label: "Skills" },
                   { href: "#experience", label: "Experience" },

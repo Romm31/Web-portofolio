@@ -81,7 +81,7 @@ const EmptyState = () => (
           </Link>
         </Button>
         <Button variant="outline" size="lg" asChild>
-          <Link href="/notes" className="gap-2">
+          <Link href="/blog" className="gap-2">
             <ExternalLink className="w-4 h-4" />
             Browse Notes
           </Link>

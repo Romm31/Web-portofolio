@@ -179,24 +179,24 @@ export const dummyPosts = [
     title: "Fixing the 'never' Error in Next.js & TypeScript",
     summary:
       "A quick guide on why the 'never' property appears in TypeScript array loops and how to use 'as const' to fix it.",
-    link: "/notes/fixing-never-error",
+    link: "/blog/fixing-never-error",
   },
   {
     title: "Optimal Next.js Deployment on GitHub Pages",
     summary:
       "Step-by-step guide to configure next.config.mjs for static export and gh-pages deployment.",
-    link: "/notes/github-pages-deployment",
+    link: "/blog/github-pages-deployment",
   },
   {
     title: "Tailwind vs Styled-Components: Choosing UI Library",
     summary:
       "Comparative analysis of popular CSS-in-JS solutions and utility-first frameworks.",
-    link: "/notes/tailwind-vs-styled",
+    link: "/blog/tailwind-vs-styled",
   },
   {
     title: "Understanding React Hooks Deeply",
     summary:
       "Dive into the core concepts of useState, useEffect, and custom hooks for better React development.",
-    link: "/notes/react-hooks",
+    link: "/blog/react-hooks",
   },
 ]

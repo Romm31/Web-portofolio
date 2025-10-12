@@ -223,7 +223,7 @@ export default function HeroSection() {
                         asChild 
                         className="group text-base md:text-lg px-6 md:px-8 py-5 md:py-6 border-2 hover:bg-primary/5 transition-all duration-300"
                     >
-                        <Link href="/notes" className="flex items-center gap-2">
+                        <Link href="/blog" className="flex items-center gap-2">
                             Read My Blog 
                             <BookOpen className="w-4 h-4 md:w-5 md:h-5 group-hover:rotate-12 transition-transform" />
                         </Link>

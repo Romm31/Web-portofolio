@@ -40,7 +40,7 @@ export function Navbar() {
     { name: "About Me", href: "#about", icon: User },
     { name: "Skills", href: "#skills", icon: Award },
     { name: "Blog", href: "/blog", icon: FileText },
-    { name: "Notes", href: "/notes", icon: BookOpen },
+    { name: "Notes", href: "/blog", icon: BookOpen },
     { name: "Projects", href: "#projects", icon: Code2 },
     { name: "Experience", href: "#experience", icon: Briefcase },
     { name: "Contact", href: "#contact", icon: Mail },
