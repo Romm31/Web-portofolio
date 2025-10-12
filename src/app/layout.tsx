@@ -10,7 +10,7 @@ const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "Erwin Wijaya",
-  description: "Portofolio Developer Next.js & shadcn",
+  description: "Cyber Security Enthusiast & CTF Player",
   icons: {
     icon: "/logo/logo.png", 
   },
