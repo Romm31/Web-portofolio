@@ -106,9 +106,9 @@ export const visualSkillData = {
 export const educationData = [
   {
     year: "2024 - Present",
-    title: "Informatics (B.S.)",
+    title: "Informatics",
     organization: "Universitas Teknokrat Indonesia",
-    detail: "Focusing on software development and system architecture.",
+    detail: "Focusing on software development, cyber security and system architecture.",
   },
   {
     year: "2021 - 2024",
