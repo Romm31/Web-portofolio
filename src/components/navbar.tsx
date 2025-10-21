@@ -3,53 +3,62 @@
 import Link from "next/link"
 import { ThemeToggle } from "./theme-toggle"
 import { useState, useEffect } from "react"
-import { Menu, X, Home, BookOpen, Code2, Award, Briefcase, Mail, FileText, ChevronDown, User } from "lucide-react"
+import { Menu, X, Home, BookOpen, Code2, Award, Briefcase, Mail } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { usePathname } from "next/navigation"
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  const [activeLink, setActiveLink] = useState("")
+  const [activeSection, setActiveSection] = useState("home")
   const pathname = usePathname()
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 10)
+      setScrolled(window.scrollY > 20)
       
-      // Update active link based on scroll position
-      const sections = ["home", "about", "skills", "projects", "experience", "contact"]
+      // Update active section based on scroll position
+      const sections = ["home", "skills", "projects", "experience", "contact"]
+      const scrollPosition = window.scrollY + 150 // Offset untuk deteksi lebih akurat
+      
       for (const section of sections) {
         const element = document.getElementById(section)
         if (element) {
-          const rect = element.getBoundingClientRect()
-          if (rect.top <= 100 && rect.bottom >= 100) {
-            setActiveLink(`#${section}`)
+          const offsetTop = element.offsetTop
+          const offsetBottom = offsetTop + element.offsetHeight
+          
+          if (scrollPosition >= offsetTop && scrollPosition < offsetBottom) {
+            setActiveSection(section)
             break
           }
         }
       }
     }
     
+    handleScroll() // Call immediately on mount
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
-  const links = [
-    { name: "Home", href: "/", icon: Home },
-    { name: "About Me", href: "#about", icon: User },
-    { name: "Skills", href: "#skills", icon: Award },
-    { name: "Blog", href: "/blog", icon: FileText },
-    { name: "Notes", href: "/blog", icon: BookOpen },
-    { name: "Projects", href: "#projects", icon: Code2 },
-    { name: "Experience", href: "#experience", icon: Briefcase },
-    { name: "Contact", href: "#contact", icon: Mail },
+  const navLinks = [
+    { name: "Home", href: "#home", icon: Home, section: "home" },
+    { name: "Skills", href: "#skills", icon: Award, section: "skills" },
+    { name: "Projects", href: "#projects", icon: Code2, section: "projects" },
+    { name: "Experience", href: "#experience", icon: Briefcase, section: "experience" },
+    { name: "Contact", href: "#contact", icon: Mail, section: "contact" },
   ]
 
-  const isActive = (href: string) => {
-    if (href.startsWith("#")) {
-      return activeLink === href
-    }
+  const pageLinks = [
+    { name: "Blog", href: "/blog", icon: BookOpen },
+    { name: "Notes", href: "/notes", icon: BookOpen },
+  ]
+
+  const isActive = (section: string) => {
+    if (pathname !== "/") return false
+    return activeSection === section
+  }
+
+  const isPageActive = (href: string) => {
     return pathname === href
   }
 
@@ -61,49 +70,55 @@ export function Navbar() {
         transition={{ duration: 0.5, ease: "easeOut" }}
         className={`fixed top-0 z-50 w-full transition-all duration-300 ${
           scrolled
-            ? "bg-background/90 backdrop-blur-xl border-b border-border/50 shadow-lg"
-            : "bg-background/70 backdrop-blur-md border-b border-border/20"
+            ? "bg-background/95 backdrop-blur-xl border-b border-border/50 shadow-lg"
+            : "bg-background/80 backdrop-blur-md border-b border-border/30"
         }`}
       >
-        <div className="container flex h-16 md:h-18 max-w-screen-2xl items-center justify-between px-4 sm:px-6">
+        <div className="container flex h-16 md:h-18 max-w-screen-2xl items-center justify-between px-4 sm:px-6 lg:px-8">
           {/* Logo with Animation */}
-        <Link href="/" className="group flex items-center gap-3">
-        <motion.div
-          whileHover={{ scale: 1.05, rotate: 5 }}
-          whileTap={{ scale: 0.95 }}
-          className="relative"
-        >
-          <div className="absolute inset-0 bg-primary/20 rounded-lg blur-md group-hover:blur-lg transition-all" />
-          <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-lg overflow-hidden border border-primary/30 bg-primary/10 flex items-center justify-center">
-            <img
-              src="/logo/logo.png"
-              alt="Erwin Wijaya Logo"
-              className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
-            />
-          </div>
-        </motion.div>
-        <span className="text-lg md:text-xl font-black tracking-tight group-hover:text-primary transition-colors hidden sm:inline-block">
-          Erwin Wijaya
-        </span>
-      </Link>
-
+          <Link href="/" className="group flex items-center gap-3" onClick={() => setActiveSection("home")}>
+            <motion.div
+              whileHover={{ scale: 1.05, rotate: 5 }}
+              whileTap={{ scale: 0.95 }}
+              className="relative"
+            >
+              <div className="absolute inset-0 bg-primary/20 rounded-lg blur-md group-hover:blur-lg transition-all" />
+              <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-lg overflow-hidden border-2 border-primary/30 bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
+                <img
+                  src="/logo/logo.png"
+                  alt="Erwin Wijaya Logo"
+                  className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-110"
+                />
+              </div>
+            </motion.div>
+            <div className="hidden sm:flex flex-col">
+              <span className="text-lg md:text-xl font-black tracking-tight leading-none group-hover:text-primary transition-colors">
+                Erwin Wijaya
+              </span>
+              <span className="text-[10px] text-muted-foreground font-medium">
+                Cybersecurity | Web Dev
+              </span>
+            </div>
+          </Link>
 
           {/* Desktop Nav */}
           <nav className="hidden lg:flex items-center ml-auto space-x-1">
-            {links.map((link) => {
+            {/* Section Links */}
+            {navLinks.map((link) => {
               const Icon = link.icon
-              const active = isActive(link.href)
+              const active = isActive(link.section)
               
               return (
                 <Link
                   key={link.name}
                   href={link.href}
                   className="relative group"
+                  onClick={() => setActiveSection(link.section)}
                 >
                   <motion.div
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                       active
                         ? "text-primary bg-primary/10"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -117,8 +132,46 @@ export function Navbar() {
                   {active && (
                     <motion.div
                       layoutId="activeNav"
-                      className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary"
-                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                      className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-full"
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                </Link>
+              )
+            })}
+
+            {/* Separator */}
+            <div className="w-px h-6 bg-border/50 mx-2" />
+
+            {/* Page Links */}
+            {pageLinks.map((link) => {
+              const Icon = link.icon
+              const active = isPageActive(link.href)
+              
+              return (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className="relative group"
+                >
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                      active
+                        ? "text-primary bg-primary/10"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span>{link.name}</span>
+                  </motion.div>
+                  
+                  {active && (
+                    <motion.div
+                      layoutId="activeNav"
+                      className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-full"
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
                     />
                   )}
                 </Link>
@@ -139,7 +192,7 @@ export function Navbar() {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="lg:hidden inline-flex items-center justify-center rounded-xl p-2.5 hover:bg-muted transition-all border border-border/50"
+              className="lg:hidden inline-flex items-center justify-center rounded-lg p-2.5 hover:bg-muted transition-all border border-border/50"
               onClick={() => setIsOpen(!isOpen)}
               aria-label="Toggle Menu"
             >
@@ -181,7 +234,7 @@ export function Navbar() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm lg:hidden"
+              className="fixed inset-0 z-40 bg-background/90 backdrop-blur-sm lg:hidden"
               onClick={() => setIsOpen(false)}
             />
 
@@ -191,43 +244,90 @@ export function Navbar() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed right-0 top-16 md:top-18 bottom-0 z-40 w-[85%] sm:w-80 bg-background border-l border-border/50 shadow-2xl lg:hidden overflow-y-auto"
+              className="fixed right-0 top-16 md:top-18 bottom-0 z-50 w-[85%] sm:w-80 bg-background border-l border-border/50 shadow-2xl lg:hidden overflow-y-auto"
             >
               <div className="flex flex-col h-full">
                 {/* Navigation Links */}
-                <div className="flex-1 py-6 px-4 space-y-2">
-                  {links.map((link, index) => {
-                    const Icon = link.icon
-                    const active = isActive(link.href)
-                    
-                    return (
-                      <motion.div
-                        key={link.name}
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.05 }}
-                      >
-                        <Link
-                          href={link.href}
-                          onClick={() => setIsOpen(false)}
-                          className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                            active
-                              ? "text-primary bg-primary/10 shadow-sm"
-                              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                          }`}
+                <div className="flex-1 py-6 px-4 space-y-1">
+                  {/* Section Links */}
+                  <div className="mb-2">
+                    <p className="text-xs font-semibold text-muted-foreground px-4 mb-2">NAVIGATION</p>
+                    {navLinks.map((link, index) => {
+                      const Icon = link.icon
+                      const active = isActive(link.section)
+                      
+                      return (
+                        <motion.div
+                          key={link.name}
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.05 }}
                         >
-                          <Icon className="w-5 h-5" />
-                          <span className="flex-1">{link.name}</span>
-                          {active && (
-                            <motion.div
-                              layoutId="activeMobile"
-                              className="w-2 h-2 rounded-full bg-primary"
-                            />
-                          )}
-                        </Link>
-                      </motion.div>
-                    )
-                  })}
+                          <Link
+                            href={link.href}
+                            onClick={() => {
+                              setIsOpen(false)
+                              setActiveSection(link.section)
+                            }}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                              active
+                                ? "text-primary bg-primary/10 shadow-sm"
+                                : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                            }`}
+                          >
+                            <Icon className="w-5 h-5" />
+                            <span className="flex-1">{link.name}</span>
+                            {active && (
+                              <motion.div
+                                layoutId="activeMobile"
+                                className="w-2 h-2 rounded-full bg-primary"
+                              />
+                            )}
+                          </Link>
+                        </motion.div>
+                      )
+                    })}
+                  </div>
+
+                  {/* Separator */}
+                  <div className="h-px bg-border/50 my-4" />
+
+                  {/* Page Links */}
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground px-4 mb-2">PAGES</p>
+                    {pageLinks.map((link, index) => {
+                      const Icon = link.icon
+                      const active = isPageActive(link.href)
+                      
+                      return (
+                        <motion.div
+                          key={link.name}
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: (navLinks.length + index) * 0.05 }}
+                        >
+                          <Link
+                            href={link.href}
+                            onClick={() => setIsOpen(false)}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                              active
+                                ? "text-primary bg-primary/10 shadow-sm"
+                                : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                            }`}
+                          >
+                            <Icon className="w-5 h-5" />
+                            <span className="flex-1">{link.name}</span>
+                            {active && (
+                              <motion.div
+                                layoutId="activeMobile"
+                                className="w-2 h-2 rounded-full bg-primary"
+                              />
+                            )}
+                          </Link>
+                        </motion.div>
+                      )
+                    })}
+                  </div>
                 </div>
 
                 {/* Footer Info */}
