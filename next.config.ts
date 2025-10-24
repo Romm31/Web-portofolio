@@ -1,13 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: "export",
-  images: { unoptimized: true },
-  experimental: {
-    appDir: true,
-  },
-  distDir: "dist",
-  trailingSlash: true, 
+  /* config options here */
 };
 
 export default nextConfig;
