@@ -22,13 +22,17 @@ import { FOOTER_BIO, GITHUB_URL, LINKEDIN_URL, EMAIL, TENESYS_URL } from "@/data
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
-// Global entry animation
+// Global entry animation - DELAY DITAMBAHKAN
 const pageEnterVariant = {
   hidden: { opacity: 0, y: 10 },
   visible: { 
     opacity: 1, 
     y: 0, 
-    transition: { duration: 0.6, ease: [0, 0, 0.2, 1] as const } as const 
+    transition: { 
+      duration: 0.6, 
+      delay: 0.3, // Delay agar muncul setelah loading screen
+      ease: [0, 0, 0.2, 1] as const 
+    } as const 
   }
 };
 
@@ -55,6 +59,16 @@ const footerItemVariants = {
 
 export default function HomePage() {
   const [showScrollTop, setShowScrollTop] = useState(false)
+  const [contentReady, setContentReady] = useState(false)
+
+  // Delay render content sampai loading screen selesai
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setContentReady(true)
+    }, 2600) // Sedikit lebih lama dari loading screen (2500ms)
+    
+    return () => clearTimeout(timer)
+  }, [])
 
   // Show/hide scroll to top button
   useEffect(() => {
@@ -68,6 +82,11 @@ export default function HomePage() {
   // Scroll to top function
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+
+  // Render placeholder saat loading
+  if (!contentReady) {
+    return <div className="min-h-screen bg-background" />
   }
 
   return (
