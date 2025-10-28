@@ -40,6 +40,18 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
+  // ✅ Fix scroll lock saat mobile menu terbuka
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden"
+    } else {
+      document.body.style.overflow = "auto"
+    }
+    return () => {
+      document.body.style.overflow = "auto"
+    }
+  }, [isOpen])
+
   const navLinks = [
     { name: "Home", href: "#home", icon: Home, section: "home" },
     { name: "Skills", href: "#skills", icon: Award, section: "skills" },
@@ -181,10 +193,7 @@ export function Navbar() {
 
           {/* Right side (Theme + Mobile Menu) */}
           <div className="flex items-center gap-2 md:gap-3 ml-4">
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <ThemeToggle />
             </motion.div>
 
@@ -247,7 +256,6 @@ export function Navbar() {
               className="fixed right-0 top-16 md:top-18 bottom-0 z-50 w-[85%] sm:w-80 bg-background border-l border-border/50 shadow-2xl lg:hidden overflow-y-auto"
             >
               <div className="flex flex-col h-full">
-                {/* Navigation Links */}
                 <div className="flex-1 py-6 px-4 space-y-1">
                   {/* Section Links */}
                   <div className="mb-2">
@@ -255,7 +263,6 @@ export function Navbar() {
                     {navLinks.map((link, index) => {
                       const Icon = link.icon
                       const active = isActive(link.section)
-                      
                       return (
                         <motion.div
                           key={link.name}
@@ -278,10 +285,7 @@ export function Navbar() {
                             <Icon className="w-5 h-5" />
                             <span className="flex-1">{link.name}</span>
                             {active && (
-                              <motion.div
-                                layoutId="activeMobile"
-                                className="w-2 h-2 rounded-full bg-primary"
-                              />
+                              <motion.div layoutId="activeMobile" className="w-2 h-2 rounded-full bg-primary" />
                             )}
                           </Link>
                         </motion.div>
@@ -298,7 +302,6 @@ export function Navbar() {
                     {pageLinks.map((link, index) => {
                       const Icon = link.icon
                       const active = isPageActive(link.href)
-                      
                       return (
                         <motion.div
                           key={link.name}
@@ -318,10 +321,7 @@ export function Navbar() {
                             <Icon className="w-5 h-5" />
                             <span className="flex-1">{link.name}</span>
                             {active && (
-                              <motion.div
-                                layoutId="activeMobile"
-                                className="w-2 h-2 rounded-full bg-primary"
-                              />
+                              <motion.div layoutId="activeMobile" className="w-2 h-2 rounded-full bg-primary" />
                             )}
                           </Link>
                         </motion.div>
