@@ -1,30 +1,36 @@
 // src/app/blog/[slug]/page.tsx
+export const dynamic = "force-dynamic";
+
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
-  getBlogPostBySlug,
-  getAllBlogSlugs,
-  serializeMDX,
   getAllBlogPosts,
+  getAllBlogSlugs,
+  getBlogPostBySlug,
+  serializeMDX,
 } from "@/lib/mdx";
 import { getRelatedPosts } from "@/lib/blog";
 import BlogPostClient from "./page-client";
-
-// Optional: biar aman di ISR mode
-export const revalidate = 60;
 
 export async function generateStaticParams() {
   const slugs = getAllBlogSlugs();
   return slugs.map((slug) => ({ slug }));
 }
 
-// 🩹 FIX: drop ResolvingMetadata type karena broken di Next 15.5.x
-export async function generateMetadata({ params }: any): Promise<Metadata> {
-  const slug = (await params?.slug) ?? params?.slug;
+// ✅ Sesuai format Next.js 15 — params langsung diambil (bukan Promise)
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
   const post = getBlogPostBySlug(slug);
 
   if (!post) {
-    return { title: "Post Not Found" };
+    return {
+      title: "Post Not Found | Erwin Wijaya",
+      description: "The requested post could not be found.",
+    };
   }
 
   return {
@@ -48,11 +54,15 @@ export async function generateMetadata({ params }: any): Promise<Metadata> {
   };
 }
 
-export default async function BlogPostPage({ params }: any) {
-  const resolvedParams = (await params) || params;
-  const slug = resolvedParams?.slug;
-
+// ✅ Komponen utama — params juga pakai Promise typing
+export default async function BlogPostPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
   const post = getBlogPostBySlug(slug);
+
   if (!post) notFound();
 
   const mdxSource = await serializeMDX(post.content);
@@ -62,8 +72,7 @@ export default async function BlogPostPage({ params }: any) {
   const currentIndex = allPosts.findIndex((p) => p.slug === slug);
   const prevPost =
     currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null;
-  const nextPost =
-    currentIndex > 0 ? allPosts[currentIndex - 1] : null;
+  const nextPost = currentIndex > 0 ? allPosts[currentIndex - 1] : null;
 
   return (
     <BlogPostClient

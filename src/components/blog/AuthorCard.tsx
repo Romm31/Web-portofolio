@@ -1,4 +1,7 @@
 // src/components/blog/AuthorCard.tsx
+
+"use client" 
+
 import { motion } from 'framer-motion';
 import { Github, Linkedin, Mail } from 'lucide-react';
 

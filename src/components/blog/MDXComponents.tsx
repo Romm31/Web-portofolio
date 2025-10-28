@@ -1,11 +1,17 @@
-import Image from 'next/image';
-import Link from 'next/link';
-import { ReactNode } from 'react';
+"use client";
+
+import React, { ReactNode } from "react";
+import Image from "next/image";
+import Link from "next/link";
 
 // Custom heading with anchor links
 function H2({ children }: { children: ReactNode }) {
-  const id = children?.toString().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-  
+  const id = children
+    ?.toString()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+
   return (
     <h2 id={id} className="group relative scroll-mt-20 text-2xl font-bold tracking-tight mt-8 mb-4">
       <a href={`#${id}`} className="absolute -left-6 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -17,8 +23,12 @@ function H2({ children }: { children: ReactNode }) {
 }
 
 function H3({ children }: { children: ReactNode }) {
-  const id = children?.toString().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-  
+  const id = children
+    ?.toString()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+
   return (
     <h3 id={id} className="group relative scroll-mt-20 text-xl font-bold tracking-tight mt-6 mb-3">
       <a href={`#${id}`} className="absolute -left-5 opacity-0 group-hover:opacity-100 transition-opacity text-sm">
@@ -32,7 +42,7 @@ function H3({ children }: { children: ReactNode }) {
 // Custom code block
 function Code({ children, className }: { children: ReactNode; className?: string }) {
   const isInline = !className;
-  
+
   if (isInline) {
     return (
       <code className="px-1.5 py-0.5 rounded bg-muted text-sm font-mono text-primary">
@@ -40,12 +50,8 @@ function Code({ children, className }: { children: ReactNode; className?: string
       </code>
     );
   }
-  
-  return (
-    <code className={className}>
-      {children}
-    </code>
-  );
+
+  return <code className={className}>{children}</code>;
 }
 
 // Pre block with copy button (will enhance later)
@@ -68,13 +74,13 @@ function Blockquote({ children }: { children: ReactNode }) {
 
 // Custom link
 function CustomLink({ href, children }: { href: string; children: ReactNode }) {
-  const isExternal = href.startsWith('http');
-  
+  const isExternal = typeof href === "string" && href.startsWith("http");
+
   if (isExternal) {
     return (
-      <a 
-        href={href} 
-        target="_blank" 
+      <a
+        href={href}
+        target="_blank"
         rel="noopener noreferrer"
         className="text-primary hover:underline font-medium"
       >
@@ -82,7 +88,7 @@ function CustomLink({ href, children }: { href: string; children: ReactNode }) {
       </a>
     );
   }
-  
+
   return (
     <Link href={href} className="text-primary hover:underline font-medium">
       {children}
@@ -94,97 +100,59 @@ function CustomLink({ href, children }: { href: string; children: ReactNode }) {
 function Table({ children }: { children: ReactNode }) {
   return (
     <div className="overflow-x-auto my-6">
-      <table className="w-full border-collapse">
-        {children}
-      </table>
+      <table className="w-full border-collapse">{children}</table>
     </div>
   );
 }
 
 function THead({ children }: { children: ReactNode }) {
-  return (
-    <thead className="bg-muted">
-      {children}
-    </thead>
-  );
+  return <thead className="bg-muted">{children}</thead>;
 }
-
 function TBody({ children }: { children: ReactNode }) {
   return <tbody>{children}</tbody>;
 }
-
 function TR({ children }: { children: ReactNode }) {
-  return (
-    <tr className="border-b border-border">
-      {children}
-    </tr>
-  );
+  return <tr className="border-b border-border">{children}</tr>;
 }
-
 function TH({ children }: { children: ReactNode }) {
-  return (
-    <th className="px-4 py-3 text-left font-semibold">
-      {children}
-    </th>
-  );
+  return <th className="px-4 py-3 text-left font-semibold">{children}</th>;
 }
-
 function TD({ children }: { children: ReactNode }) {
-  return (
-    <td className="px-4 py-3">
-      {children}
-    </td>
-  );
+  return <td className="px-4 py-3">{children}</td>;
 }
 
 // Custom paragraph
 function P({ children }: { children: ReactNode }) {
-  return (
-    <p className="my-4 leading-7 text-foreground/90">
-      {children}
-    </p>
-  );
+  return <p className="my-4 leading-7 text-foreground/90">{children}</p>;
 }
 
 // Custom list
 function UL({ children }: { children: ReactNode }) {
-  return (
-    <ul className="list-disc list-inside space-y-2 my-4 ml-4">
-      {children}
-    </ul>
-  );
+  return <ul className="list-disc list-inside space-y-2 my-4 ml-4">{children}</ul>;
 }
-
 function OL({ children }: { children: ReactNode }) {
-  return (
-    <ol className="list-decimal list-inside space-y-2 my-4 ml-4">
-      {children}
-    </ol>
-  );
+  return <ol className="list-decimal list-inside space-y-2 my-4 ml-4">{children}</ol>;
 }
-
 function LI({ children }: { children: ReactNode }) {
-  return (
-    <li className="leading-7">
-      {children}
-    </li>
-  );
+  return <li className="leading-7">{children}</li>;
 }
 
 // Callout component (custom)
-function Callout({ children, type = 'info' }: { children: ReactNode; type?: 'info' | 'warning' | 'error' | 'success' }) {
-  const styles = {
-    info: 'bg-blue-500/10 border-blue-500/50 text-blue-600 dark:text-blue-400',
-    warning: 'bg-yellow-500/10 border-yellow-500/50 text-yellow-600 dark:text-yellow-400',
-    error: 'bg-red-500/10 border-red-500/50 text-red-600 dark:text-red-400',
-    success: 'bg-green-500/10 border-green-500/50 text-green-600 dark:text-green-400',
+function Callout({
+  children,
+  type = "info",
+}: {
+  children: ReactNode;
+  type?: "info" | "warning" | "error" | "success";
+}) {
+  const styles: Record<string, string> = {
+    info: "bg-blue-500/10 border-blue-500/50 text-blue-600 dark:text-blue-400",
+    warning: "bg-yellow-500/10 border-yellow-500/50 text-yellow-600 dark:text-yellow-400",
+    error: "bg-red-500/10 border-red-500/50 text-red-600 dark:text-red-400",
+    success: "bg-green-500/10 border-green-500/50 text-green-600 dark:text-green-400",
   };
-  
-  return (
-    <div className={`border-l-4 p-4 my-4 rounded-r ${styles[type]}`}>
-      {children}
-    </div>
-  );
+
+  return <div className={`border-l-4 p-4 my-4 rounded-r ${styles[type]}`}>{children}</div>;
 }
 
 // Export all components

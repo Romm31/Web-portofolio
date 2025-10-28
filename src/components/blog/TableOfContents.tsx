@@ -1,37 +1,42 @@
 "use client"
 
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import type { TocItem } from '@/lib/blog';
+import { useState, useEffect } from "react"
+import { motion } from "framer-motion"
+import type { TocItem } from "@/lib/blog"
 
 interface TableOfContentsProps {
-  items: TocItem[];
+  items: TocItem[]
 }
 
 export default function TableOfContents({ items }: TableOfContentsProps) {
-  const [activeId, setActiveId] = useState<string>('');
+  const [activeId, setActiveId] = useState<string>("")
 
   useEffect(() => {
+    // 🧩 Pastikan kode DOM hanya jalan di browser, bukan saat build
+    if (typeof window === "undefined") return
+
+    const headings = document.querySelectorAll("h2[id], h3[id]")
+    if (!headings.length) return
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            setActiveId(entry.target.id);
+            setActiveId(entry.target.id)
           }
-        });
+        })
       },
-      { rootMargin: '-20% 0px -35% 0px' }
-    );
+      { rootMargin: "-20% 0px -35% 0px" }
+    )
 
-    const headings = document.querySelectorAll('h2[id], h3[id]');
-    headings.forEach((heading) => observer.observe(heading));
+    headings.forEach((heading) => observer.observe(heading))
 
     return () => {
-      headings.forEach((heading) => observer.unobserve(heading));
-    };
-  }, []);
+      headings.forEach((heading) => observer.unobserve(heading))
+    }
+  }, [])
 
-  if (items.length === 0) return null;
+  if (items.length === 0) return null
 
   return (
     <motion.nav
@@ -45,24 +50,26 @@ export default function TableOfContents({ items }: TableOfContentsProps) {
       </h2>
       <ul className="space-y-2 text-sm">
         {items.map((item) => {
-          const isActive = activeId === item.id;
-          const isH3 = item.level === 3;
+          const isActive = activeId === item.id
+          const isH3 = item.level === 3
 
           return (
-            <li key={item.id} className={isH3 ? 'ml-4' : ''}>
+            <li key={item.id} className={isH3 ? "ml-4" : ""}>
               <a
                 href={`#${item.id}`}
                 onClick={(e) => {
-                  e.preventDefault();
-                  document.getElementById(item.id)?.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start',
-                  });
+                  e.preventDefault()
+                  if (typeof window !== "undefined") {
+                    document.getElementById(item.id)?.scrollIntoView({
+                      behavior: "smooth",
+                      block: "start",
+                    })
+                  }
                 }}
                 className={`block py-1 transition-colors ${
                   isActive
-                    ? 'text-primary font-medium'
-                    : 'text-muted-foreground hover:text-foreground'
+                    ? "text-primary font-medium"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 <span className="inline-flex items-center gap-2">
@@ -73,9 +80,9 @@ export default function TableOfContents({ items }: TableOfContentsProps) {
                 </span>
               </a>
             </li>
-          );
+          )
         })}
       </ul>
     </motion.nav>
-  );
+  )
 }
