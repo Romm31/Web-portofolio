@@ -1,30 +1,38 @@
 // src/app/blog/[slug]/page.tsx
-import { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import { getBlogPostBySlug, getAllBlogSlugs, serializeMDX, getAllBlogPosts } from '@/lib/mdx';
-import { getRelatedPosts } from '@/lib/blog';
-import BlogPostClient from './page-client';
+import { Metadata } from "next";
+import { notFound } from "next/navigation";
+import {
+  getBlogPostBySlug,
+  getAllBlogSlugs,
+  serializeMDX,
+  getAllBlogPosts,
+} from "@/lib/mdx";
+import { getRelatedPosts } from "@/lib/blog";
+import BlogPostClient from "./page-client";
+
 
 interface BlogPostPageProps {
-  params: Promise<{
+  params: {
     slug: string;
-  }>;
+  };
 }
 
-// Generate static params for all blog posts
 export function generateStaticParams() {
   const slugs = getAllBlogSlugs();
   return slugs.map((slug: string) => ({ slug }));
 }
 
-// Generate metadata for SEO
-export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
-  const { slug } = await params;
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string };
+}): Promise<Metadata> {
+  const { slug } = params;
   const post = getBlogPostBySlug(slug);
 
   if (!post) {
     return {
-      title: 'Post Not Found',
+      title: "Post Not Found",
     };
   }
 
@@ -34,14 +42,14 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
     openGraph: {
       title: post.frontmatter.title,
       description: post.frontmatter.summary,
-      type: 'article',
+      type: "article",
       publishedTime: post.frontmatter.date,
-      authors: [post.frontmatter.author || 'Erwin Wijaya'],
+      authors: [post.frontmatter.author || "Erwin Wijaya"],
       tags: post.frontmatter.tags,
       images: post.frontmatter.image ? [post.frontmatter.image] : [],
     },
     twitter: {
-      card: 'summary_large_image',
+      card: "summary_large_image",
       title: post.frontmatter.title,
       description: post.frontmatter.summary,
       images: post.frontmatter.image ? [post.frontmatter.image] : [],
@@ -50,24 +58,21 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
-  const { slug } = await params;
+  const { slug } = params;
   const post = getBlogPostBySlug(slug);
 
-  if (!post) {
-    notFound();
-  }
+  if (!post) notFound();
 
-  // Serialize MDX content
   const mdxSource = await serializeMDX(post.content);
 
-  // Get related posts
   const allPosts = getAllBlogPosts();
   const relatedPosts = getRelatedPosts(post, allPosts, 3);
 
-  // Get prev/next posts
   const currentIndex = allPosts.findIndex((p) => p.slug === slug);
-  const prevPost = currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null;
-  const nextPost = currentIndex > 0 ? allPosts[currentIndex - 1] : null;
+  const prevPost =
+    currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null;
+  const nextPost =
+    currentIndex > 0 ? allPosts[currentIndex - 1] : null;
 
   return (
     <BlogPostClient
