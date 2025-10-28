@@ -1,23 +1,29 @@
 "use client"
 
 import Link from "next/link"
-import { ThemeToggle } from "@/components/theme-toggle" // ✅ path fix
+import { ThemeToggle } from "@/components/theme-toggle"
 import { useState, useEffect } from "react"
 import { Menu, X, Home, BookOpen, Code2, Award, Briefcase, Mail } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [activeSection, setActiveSection] = useState("home")
   const pathname = usePathname()
+  const router = useRouter()
+
+  // Only track sections on homepage
+  const isHomePage = pathname === "/"
 
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20)
       
-      // Update active section based on scroll position
+      // Only update active section on homepage
+      if (!isHomePage) return
+      
       const sections = ["home", "skills", "projects", "experience", "contact"]
       const scrollPosition = window.scrollY + 150
       
@@ -38,9 +44,9 @@ export function Navbar() {
     handleScroll()
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+  }, [isHomePage])
 
-  // 🔧 NAVIGATION CONFIG
+  // Navigation config
   const navLinks = [
     { name: "Home", href: "/#home", icon: Home, section: "home" },
     { name: "Skills", href: "/#skills", icon: Award, section: "skills" },
@@ -55,12 +61,31 @@ export function Navbar() {
   ]
 
   const isActive = (section: string) => {
-    if (pathname !== "/") return false
+    if (!isHomePage) return false
     return activeSection === section
   }
 
   const isPageActive = (href: string) => {
     return pathname === href
+  }
+
+  // Handle section navigation
+  const handleSectionClick = (e: React.MouseEvent, href: string, section: string) => {
+    e.preventDefault()
+    
+    if (!isHomePage) {
+      // If not on homepage, navigate to homepage first
+      router.push(href)
+    } else {
+      // If on homepage, smooth scroll to section
+      const element = document.getElementById(section)
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" })
+        setActiveSection(section)
+      }
+    }
+    
+    setIsOpen(false)
   }
 
   return (
@@ -77,7 +102,11 @@ export function Navbar() {
       >
         <div className="container flex h-16 md:h-18 max-w-screen-2xl items-center justify-between px-4 sm:px-6 lg:px-8">
           {/* Logo with Animation */}
-          <Link href="/" className="group flex items-center gap-3" onClick={() => setActiveSection("home")}>
+          <Link 
+            href="/" 
+            className="group flex items-center gap-3" 
+            onClick={() => setActiveSection("home")}
+          >
             <motion.div
               whileHover={{ scale: 1.05, rotate: 5 }}
               whileTap={{ scale: 0.95 }}
@@ -110,11 +139,11 @@ export function Navbar() {
               const active = isActive(link.section)
               
               return (
-                <Link
+                <a
                   key={link.name}
                   href={link.href}
-                  className="relative group"
-                  onClick={() => setActiveSection(link.section)}
+                  onClick={(e) => handleSectionClick(e, link.href, link.section)}
+                  className="relative group cursor-pointer"
                 >
                   <motion.div
                     whileHover={{ scale: 1.05 }}
@@ -137,7 +166,7 @@ export function Navbar() {
                       transition={{ type: "spring", stiffness: 380, damping: 30 }}
                     />
                   )}
-                </Link>
+                </a>
               )
             })}
 
@@ -258,12 +287,9 @@ export function Navbar() {
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: index * 0.05 }}
                         >
-                          <Link
+                          <a
                             href={link.href}
-                            onClick={() => {
-                              setIsOpen(false)
-                              setActiveSection(link.section)
-                            }}
+                            onClick={(e) => handleSectionClick(e, link.href, link.section)}
                             className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
                               active
                                 ? "text-primary bg-primary/10 shadow-sm"
@@ -278,7 +304,7 @@ export function Navbar() {
                                 className="w-2 h-2 rounded-full bg-primary"
                               />
                             )}
-                          </Link>
+                          </a>
                         </motion.div>
                       )
                     })}

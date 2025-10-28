@@ -1,17 +1,16 @@
-"use server";
+// src/lib/mdx.ts
+import fs from 'fs';
+import path from 'path';
+import matter from 'gray-matter';
+import { serialize } from 'next-mdx-remote/serialize';
+import readingTime from 'reading-time';
+import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import rehypePrism from 'rehype-prism-plus';
+import rehypeCodeTitles from 'rehype-code-titles';
 
-import { promises as fs } from "fs";
-import path from "path";
-import matter from "gray-matter";
-import { serialize } from "next-mdx-remote/serialize";
-import readingTime from "reading-time";
-import remarkGfm from "remark-gfm";
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
-import rehypePrism from "rehype-prism-plus";
-import rehypeCodeTitles from "rehype-code-titles";
-
-const BLOG_PATH = path.join(process.cwd(), "src/content/blog");
+const BLOG_PATH = path.join(process.cwd(), 'src/content/blog');
 
 export interface BlogFrontmatter {
   title: string;
@@ -31,22 +30,25 @@ export interface BlogPost {
   readingTime: string;
 }
 
-// ✅ get all slugs
-export async function getAllBlogSlugs(): Promise<string[]> {
-  try {
-    const files = await fs.readdir(BLOG_PATH);
-    return files.filter(f => f.endsWith(".mdx")).map(f => f.replace(/\.mdx$/, ""));
-  } catch {
+// Get all MDX files from content/blog - SYNC
+export function getAllBlogSlugs(): string[] {
+  if (!fs.existsSync(BLOG_PATH)) {
     return [];
   }
+  
+  const files = fs.readdirSync(BLOG_PATH);
+  return files
+    .filter((file) => file.endsWith('.mdx'))
+    .map((file) => file.replace(/\.mdx$/, ''));
 }
 
-// ✅ get single post
-export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> {
+// Get single blog post by slug - SYNC
+export function getBlogPostBySlug(slug: string): BlogPost | null {
   try {
     const filePath = path.join(BLOG_PATH, `${slug}.mdx`);
-    const fileContents = await fs.readFile(filePath, "utf8");
+    const fileContents = fs.readFileSync(filePath, 'utf8');
     const { data, content } = matter(fileContents);
+    
     const readTime = readingTime(content);
 
     return {
@@ -61,47 +63,58 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
   }
 }
 
-// ✅ get all posts
-export async function getAllBlogPosts(): Promise<BlogPost[]> {
-  const slugs = await getAllBlogSlugs();
-  const posts = await Promise.all(slugs.map(s => getBlogPostBySlug(s)));
-  return posts
-    .filter((p): p is BlogPost => p !== null)
-    .filter(p => !p.frontmatter.draft)
-    .sort((a, b) =>
-      new Date(b.frontmatter.date).getTime() - new Date(a.frontmatter.date).getTime()
-    );
+// Get all blog posts - SYNC
+export function getAllBlogPosts(): BlogPost[] {
+  const slugs = getAllBlogSlugs();
+  const posts = slugs
+    .map((slug) => getBlogPostBySlug(slug))
+    .filter((post): post is BlogPost => post !== null)
+    .filter((post) => !post.frontmatter.draft) // Hide draft posts
+    .sort((a, b) => {
+      // Sort by date (newest first)
+      return new Date(b.frontmatter.date).getTime() - new Date(a.frontmatter.date).getTime();
+    });
+
+  return posts;
 }
 
-// ✅ get posts by tag
-export async function getPostsByTag(tag: string): Promise<BlogPost[]> {
-  const allPosts = await getAllBlogPosts();
-  return allPosts.filter(p =>
-    p.frontmatter.tags.map(t => t.toLowerCase()).includes(tag.toLowerCase())
+// Get posts by tag - SYNC
+export function getPostsByTag(tag: string): BlogPost[] {
+  const allPosts = getAllBlogPosts();
+  return allPosts.filter((post) =>
+    post.frontmatter.tags.map((t) => t.toLowerCase()).includes(tag.toLowerCase())
   );
 }
 
-// ✅ get all tags
-export async function getAllTags(): Promise<{ tag: string; count: number }[]> {
-  const allPosts = await getAllBlogPosts();
+// Get all unique tags - SYNC
+export function getAllTags(): { tag: string; count: number }[] {
+  const allPosts = getAllBlogPosts();
   const tagCount: Record<string, number> = {};
-  allPosts.forEach(post => {
-    post.frontmatter.tags.forEach(tag => {
-      const t = tag.toLowerCase();
-      tagCount[t] = (tagCount[t] || 0) + 1;
+
+  allPosts.forEach((post) => {
+    post.frontmatter.tags.forEach((tag) => {
+      const normalizedTag = tag.toLowerCase();
+      tagCount[normalizedTag] = (tagCount[normalizedTag] || 0) + 1;
     });
   });
+
   return Object.entries(tagCount)
     .map(([tag, count]) => ({ tag, count }))
     .sort((a, b) => b.count - a.count);
 }
 
-// ✅ serialize markdown
+// Serialize MDX content - ASYNC (only this one)
 export async function serializeMDX(content: string) {
-  return await serialize(content, {
+  const mdxSource = await serialize(content, {
     mdxOptions: {
       remarkPlugins: [remarkGfm, remarkMath],
-      rehypePlugins: [rehypeCodeTitles, rehypePrism, rehypeKatex],
+      rehypePlugins: [
+        rehypeCodeTitles,
+        rehypePrism,
+        rehypeKatex,
+      ],
     },
   });
+
+  return mdxSource;
 }

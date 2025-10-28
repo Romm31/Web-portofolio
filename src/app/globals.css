@@ -196,3 +196,16 @@ html {
     height: auto;
   }
 }
+
+pre[class*="language-"] {
+  @apply my-4 rounded-lg overflow-x-auto;
+}
+
+code[class*="language-"],
+pre[class*="language-"] {
+  @apply text-sm leading-relaxed;
+}
+
+:not(pre) > code {
+  @apply px-1.5 py-0.5 rounded text-sm font-mono;
+}
