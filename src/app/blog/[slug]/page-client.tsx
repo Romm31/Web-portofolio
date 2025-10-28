@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import { motion } from 'framer-motion';
-import { MDXRemote, MDXRemoteSerializeResult } from 'next-mdx-remote';
-import { MDXComponents } from '@/components/blog/MDXComponents';
-import BlogHeader from '@/components/blog/BlogHeader';
-import TableOfContents from '@/components/blog/TableOfContents';
-import ShareButtons from '@/components/blog/ShareButtons';
-import AuthorCard from '@/components/blog/AuthorCard';
-import RelatedPosts from '@/components/blog/RelatedPosts';
-import PrevNextNav from '@/components/blog/PrevNextNav';
-import type { BlogPost } from '@/lib/mdx';
-import { generateTOC } from '@/lib/blog';
+import { motion } from "framer-motion";
+import { MDXRemote, MDXRemoteSerializeResult } from "next-mdx-remote";
+import { MDXComponents } from "@/components/blog/MDXComponents";
+import BlogHeader from "@/components/blog/BlogHeader";
+import TableOfContents from "@/components/blog/TableOfContents";
+import ShareButtons from "@/components/blog/ShareButtons";
+import AuthorCard from "@/components/blog/AuthorCard";
+import RelatedPosts from "@/components/blog/RelatedPosts";
+import PrevNextNav from "@/components/blog/PrevNextNav";
+import type { BlogPost } from "@/lib/mdx";
+import { generateTOC } from "@/lib/blog";
 
 interface BlogPostClientProps {
   post: BlogPost;
@@ -31,21 +31,17 @@ export default function BlogPostClient({
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Blog Header */}
       <BlogHeader post={post} />
 
-      {/* Main Content */}
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Table of Contents - Desktop */}
             <aside className="hidden lg:block lg:col-span-3">
               <div className="sticky top-24">
                 <TableOfContents items={toc} />
               </div>
             </aside>
 
-            {/* Article Content */}
             <article className="lg:col-span-6">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -66,26 +62,20 @@ export default function BlogPostClient({
                   prose-li:marker:text-primary
                   prose-table:border-collapse
                   prose-th:bg-muted prose-th:font-semibold
-                  prose-td:border prose-td:border-border
-                "
+                  prose-td:border prose-td:border-border"
               >
                 <MDXRemote {...mdxSource} components={MDXComponents} />
               </motion.div>
 
-              {/* Share Buttons */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.4 }}
                 className="mt-12 pt-8 border-t border-border"
               >
-                <ShareButtons 
-                  title={post.frontmatter.title}
-                  slug={post.slug}
-                />
+                <ShareButtons title={post.frontmatter.title} slug={post.slug} />
               </motion.div>
 
-              {/* Author Card */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -95,7 +85,6 @@ export default function BlogPostClient({
                 <AuthorCard author={post.frontmatter.author} />
               </motion.div>
 
-              {/* Prev/Next Navigation */}
               {(prevPost || nextPost) && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -108,22 +97,19 @@ export default function BlogPostClient({
               )}
             </article>
 
-            {/* Sidebar - Desktop */}
             <aside className="hidden lg:block lg:col-span-3">
               <div className="sticky top-24 space-y-8">
-                {/* Share Buttons - Sidebar */}
                 <div className="p-6 rounded-xl border border-border bg-card">
                   <h3 className="font-bold text-sm uppercase tracking-wider mb-4 text-muted-foreground">
                     Share Article
                   </h3>
-                  <ShareButtons 
+                  <ShareButtons
                     title={post.frontmatter.title}
                     slug={post.slug}
                     layout="vertical"
                   />
                 </div>
 
-                {/* Related Posts Preview */}
                 {relatedPosts.length > 0 && (
                   <div className="p-6 rounded-xl border border-border bg-card">
                     <h3 className="font-bold text-sm uppercase tracking-wider mb-4 text-muted-foreground">
@@ -148,7 +134,6 @@ export default function BlogPostClient({
             </aside>
           </div>
 
-          {/* Related Posts - Full Width */}
           {relatedPosts.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
