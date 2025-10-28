@@ -1,5 +1,3 @@
-// src/app/page.tsx
-
 "use client"
 
 import { motion } from "framer-motion"
@@ -12,7 +10,7 @@ import { useState, useEffect } from "react"
 import HeroSection from "@/sections/HeroSection"
 import AboutSection from "@/sections/AboutSection"
 import SkillsSection from "@/sections/SkillsSection"
-import LatestPostsSection from "@/sections/LatestPostsSection"
+import LatestPostsSection from "@/sections/LatestPostsSection" // ✅ Server component (no props)
 import ProjectsSection from "@/sections/ProjectsSection"
 import ExperienceSection from "@/sections/ExperienceSection"
 import ContactSection from "@/sections/ContactSection"
@@ -163,6 +161,7 @@ export default function HomePage() {
 
         <SkillsSection />
 
+        {/* ✅ Sudah otomatis ambil post di server */}
         <LatestPostsSection />
 
         <ProjectsSection />

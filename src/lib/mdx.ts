@@ -1,16 +1,16 @@
 // src/lib/mdx.ts
-import fs from 'fs';
-import path from 'path';
-import matter from 'gray-matter';
-import { serialize } from 'next-mdx-remote/serialize';
-import readingTime from 'reading-time';
-import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
-import rehypePrism from 'rehype-prism-plus';
-import rehypeCodeTitles from 'rehype-code-titles';
+import fs from "fs";
+import path from "path";
+import matter from "gray-matter";
+import { serialize } from "next-mdx-remote/serialize";
+import readingTime from "reading-time";
+import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import rehypePrism from "rehype-prism-plus";
+import rehypeCodeTitles from "rehype-code-titles";
 
-const BLOG_PATH = path.join(process.cwd(), 'src/content/blog');
+const BLOG_PATH = path.join(process.cwd(), "src/content/blog");
 
 export interface BlogFrontmatter {
   title: string;
@@ -30,25 +30,25 @@ export interface BlogPost {
   readingTime: string;
 }
 
-// Get all MDX files from content/blog - SYNC
+
 export function getAllBlogSlugs(): string[] {
-  if (!fs.existsSync(BLOG_PATH)) {
-    return [];
-  }
-  
-  const files = fs.readdirSync(BLOG_PATH);
-  return files
-    .filter((file) => file.endsWith('.mdx'))
-    .map((file) => file.replace(/\.mdx$/, ''));
+  if (!fs.existsSync(BLOG_PATH)) return [];
+
+  return fs
+    .readdirSync(BLOG_PATH)
+    .filter((dir) => {
+      const fullPath = path.join(BLOG_PATH, dir, "blog.mdx");
+      return fs.existsSync(fullPath);
+    });
 }
 
-// Get single blog post by slug - SYNC
+
 export function getBlogPostBySlug(slug: string): BlogPost | null {
   try {
-    const filePath = path.join(BLOG_PATH, `${slug}.mdx`);
-    const fileContents = fs.readFileSync(filePath, 'utf8');
+    const filePath = path.join(BLOG_PATH, slug, "blog.mdx"); 
+    const fileContents = fs.readFileSync(filePath, "utf8");
     const { data, content } = matter(fileContents);
-    
+
     const readTime = readingTime(content);
 
     return {
@@ -63,22 +63,23 @@ export function getBlogPostBySlug(slug: string): BlogPost | null {
   }
 }
 
-// Get all blog posts - SYNC
+
 export function getAllBlogPosts(): BlogPost[] {
   const slugs = getAllBlogSlugs();
   const posts = slugs
     .map((slug) => getBlogPostBySlug(slug))
     .filter((post): post is BlogPost => post !== null)
-    .filter((post) => !post.frontmatter.draft) // Hide draft posts
-    .sort((a, b) => {
-      // Sort by date (newest first)
-      return new Date(b.frontmatter.date).getTime() - new Date(a.frontmatter.date).getTime();
-    });
+    .filter((post) => !post.frontmatter.draft)
+    .sort(
+      (a, b) =>
+        new Date(b.frontmatter.date).getTime() -
+        new Date(a.frontmatter.date).getTime()
+    );
 
   return posts;
 }
 
-// Get posts by tag - SYNC
+
 export function getPostsByTag(tag: string): BlogPost[] {
   const allPosts = getAllBlogPosts();
   return allPosts.filter((post) =>
@@ -86,7 +87,7 @@ export function getPostsByTag(tag: string): BlogPost[] {
   );
 }
 
-// Get all unique tags - SYNC
+
 export function getAllTags(): { tag: string; count: number }[] {
   const allPosts = getAllBlogPosts();
   const tagCount: Record<string, number> = {};
@@ -103,16 +104,12 @@ export function getAllTags(): { tag: string; count: number }[] {
     .sort((a, b) => b.count - a.count);
 }
 
-// Serialize MDX content - ASYNC (only this one)
+
 export async function serializeMDX(content: string) {
   const mdxSource = await serialize(content, {
     mdxOptions: {
       remarkPlugins: [remarkGfm, remarkMath],
-      rehypePlugins: [
-        rehypeCodeTitles,
-        rehypePrism,
-        rehypeKatex,
-      ],
+      rehypePlugins: [rehypeCodeTitles, rehypePrism, rehypeKatex],
     },
   });
 

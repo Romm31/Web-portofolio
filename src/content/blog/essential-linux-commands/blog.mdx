@@ -1,0 +1,572 @@
+---
+title: "Linux Cheatsheet"
+date: "2025-10-28"
+tags: ["linux", "cheatsheet", "terminal", "cybersecurity", "ctf", "sysadmin", "tenesys"]
+summary: "Cheatsheet Linux perintah, trik, one-liners, debugging, keamanan, forensik, dan workflow sehari-hari untuk CTF, pentest, dan administrasi sistem."
+image: "/blog/cheatsheet-linux/linux.jpg"
+author: "Erwin Wijaya"
+draft: false
+featured: true
+---
+
+## Pendahuluan
+
+Cheatsheet ini dibuat untuk menjadi referensi cepat dan padat dalam bahasa Indonesia — berguna untuk sysadmin, peserta CTF, pentester, dan pengguna Linux sehari-hari. Fokusnya: perintah praktis, contoh nyata, one-liners, dan praktik aman. Gunakan dengan bijak dan selalu pastikan **izin** sebelum melakukan pengujian ke sistem yang bukan milikmu.
+
+---
+
+# Daftar Isi
+1. Navigasi & File System  
+2. Operasi File & I/O  
+3. Pencarian & Grep / Text Processing  
+4. Jaringan & Troubleshooting  
+5. Manajemen Proses & Resource  
+6. Izin & Kepemilikan / Privilege Escalation dasar  
+7. Paket & Manajemen Sistem  
+8. Logging & Debugging Sistem  
+9. Kompresi, Arsip & Backup  
+10. SSH, Remote Access & Tunneling  
+11. Tools Penting untuk CTF / Pentest  
+12. Scripting Bash & One-Liners Python  
+13. Systemd, Services & Boot  
+14. Kontainerisasi (Docker) & Virtualisasi singkat  
+15. Forensik & Tanda-tanda Investigasi  
+16. Kernel, Modul & Sysctl  
+17. Editor & Produktivitas (vim, tmux)  
+18. Keamanan Praktis & Hardening singkat  
+19. Path & File penting di Linux  
+20. Referensi dan Best Practices
+
+---
+
+## 1. Navigasi & File System
+
+```bash
+# Lokasi saat ini
+pwd
+
+# Daftar file (banyak opsi)
+ls -la            # semua file termasuk dotfile
+ls -lh            # human readable size
+ls -lt            # urut berdasarkan waktu modifikasi
+ls --color=auto   # menampilkan warna sesuai tipe
+
+# Pindah folder
+cd /path/to/dir
+cd ~              # home
+cd -              # kembali ke direktori sebelumnya
+cd ..             # parent
+
+# Buat / hapus
+mkdir -p a/b/c    # buat parent bila perlu
+rmdir empty_dir
+rm -rf dir_or_file   # hati-hati!
+```
+
+---
+
+## 2. Operasi File & I/O
+
+```bash
+# Baca file
+cat file.txt
+tac file.txt            # kebalikan cat
+less file.txt           # navigasi besar
+head -n 50 file.txt
+tail -n 50 file.txt
+tail -f /var/log/syslog # mengikuti log
+
+# Redirect & pipe
+command > out.txt       # tulis (overwrite)
+command >> out.txt      # append
+command 2> error.txt    # stderr saja
+command &> all.txt      # stdout + stderr
+command | tee out.txt   # tampil & simpan
+
+# Copy / move / link
+cp -r src dst
+mv file /tmp/
+ln -s /path/to/target symlink
+```
+
+---
+
+## 3. Pencarian & Text Processing
+
+### find + locate
+
+```bash
+find / -name "flag.txt" 2>/dev/null
+find / -type f -perm -4000 2>/dev/null   # SUID
+find . -iname "*.key" -mtime -7          # file .key diubah 7 hari terakhir
+locate filename
+updatedb    # update DB locate (butuh sudo)
+```
+
+### grep / ripgrep / ack
+
+```bash
+grep -RIn "pattern" /path         # recursive, ignore case
+grep -n "TODO" -r --exclude-dir=.git
+rg "pattern"                      # ripgrep (lebih cepat jika terinstal)
+```
+
+### sed / awk / cut / sort
+
+```bash
+# sed replace in-place
+sed -i 's/old/new/g' file.txt
+
+# awk handy printing
+ps aux | awk '{print $1, $2, $11}'  # user, pid, command
+
+# cut columns
+cut -d: -f1 /etc/passwd
+cut -c1-10 file.txt
+
+# sort/uniq
+sort file.txt | uniq -c | sort -nr
+```
+
+---
+
+## 4. Jaringan & Troubleshooting
+
+### Info dasar
+
+```bash
+ip addr show
+ip -s link
+ip route
+ss -tulpan        # socket/listening
+netstat -tulpen   # jika tersedia
+```
+
+### DNS / ping / traceroute
+
+```bash
+ping -c 4 8.8.8.8
+ping -c 4 example.com
+dig example.com +short
+nslookup example.com
+traceroute example.com
+```
+
+### Transfer & raw TCP
+
+```bash
+curl -I https://example.com
+curl -sS -L -o /tmp/out https://example.com/file
+wget https://example.com/file
+
+# netcat (nc)
+nc -lvnp 4444               # listen
+nc -v remote 80             # connect
+nc -zv 192.168.1.1 20-1000  # scan ports (basic)
+```
+
+### Packet capture
+
+```bash
+tcpdump -i eth0 -w capture.pcap
+tcpdump -n -vv port 80
+# gunakan Wireshark untuk analisa pcap
+```
+
+---
+
+## 5. Manajemen Proses & Resource
+
+```bash
+ps aux | less
+top                 # interaktif
+htop                # lebih user-friendly (jika ada)
+pgrep -f python     # cari PID berdasar pattern
+kill PID
+kill -9 PID         # SIGKILL
+pkill -f "nginx"
+nice -n 10 command  # set niceness
+renice -n 5 -p PID
+```
+
+Menjalankan di background / persistent:
+
+```bash
+command &           # background
+nohup command &     # tahan setelah logout
+disown %1           # detach job dari shell
+screen -S name      # atau tmux
+```
+
+---
+
+## 6. Izin File & Kepemilikan (Permissions / Ownership)
+
+```bash
+ls -l file.txt
+chmod 644 file.txt
+chmod +x script.sh
+chmod 4755 /path/to/binary   # set SUID untuk testing (berbahaya)
+chown user:group file
+chown -R www-data:www-data /var/www
+getfacl file.txt              # jika filesystem pakai ACL
+setfacl -m u:username:rwx dir
+```
+
+### Tips Privilege Escalation (CTF/safe learning)
+- Cari SUID binaries: `find / -perm -4000 -type f 2>/dev/null`
+- Cari world-writable files & dirs: `find / -writable -type d 2>/dev/null`
+- Periksa crontab `cat /etc/crontab` dan `ls -la /etc/cron*`
+- Periksa file konfigurasi yang berisi password (`/etc/shadow` butuh root)
+- Cek `sudo -l` untuk hak sudo yang diberikan ke user
+- Periksa backup atau file konfigurasi yang berisi credential (contoh: `/var/backups`, `/home/*/.aws/credentials`)
+- Jangan gunakan exploit di sistem produksi tanpa izin; gunakan lab/VM
+
+---
+
+## 7. Paket & Manajemen Sistem
+
+### Debian/Ubuntu (apt)
+
+```bash
+sudo apt update
+sudo apt upgrade -y
+sudo apt install -y curl wget htop git build-essential
+sudo apt remove package
+dpkg -l | grep package
+```
+
+### RHEL/CentOS (dnf/yum)
+
+```bash
+sudo dnf update
+sudo dnf install -y epel-release
+sudo dnf install -y vim git
+sudo yum list installed
+```
+
+### Arch
+
+```bash
+sudo pacman -Syu
+sudo pacman -S package
+```
+
+### Snap / Flatpak
+
+```bash
+snap list
+flatpak list
+```
+
+---
+
+## 8. Logging & Debugging Sistem
+
+```bash
+# Systemd journal
+journalctl -xe
+journalctl -u nginx.service --since "1 hour ago"
+
+# Syslog
+tail -n 200 /var/log/syslog
+less /var/log/auth.log         # auth events
+less /var/log/kern.log         # kernel messages
+dmesg | less                   # ring buffer kernel
+dmesg | grep -i usb            # filter
+```
+
+### Debugging startup
+
+```bash
+systemctl status nginx.service
+systemctl daemon-reload
+systemctl restart service
+systemctl enable service
+systemctl disable service
+```
+
+---
+
+## 9. Kompresi, Arsip & Backup
+
+```bash
+# Tar gzip
+tar -czf archive.tar.gz /path/to/dir
+tar -xzf archive.tar.gz -C /dest
+
+# Zip
+zip -r backup.zip folder
+unzip backup.zip
+
+# bzip2 / xz
+tar -cJf archive.tar.xz /path
+
+# rsync untuk backup incremental
+rsync -avz --delete /source/ /backup/
+rsync -avz --progress -e "ssh -p 2222" /local/ user@remote:/backup/
+```
+
+---
+
+## 10. SSH, Remote Access & Tunneling
+
+```bash
+# Basic
+ssh user@host
+ssh -p 2222 user@host
+ssh -i ~/.ssh/id_rsa user@host
+
+# Copy
+scp file user@host:/path
+rsync -avz -e "ssh -p 2222" file user@host:/path
+
+# Forwarding / Tunneling
+ssh -L 8080:localhost:80 user@remote   # local forward
+ssh -R 9000:localhost:22 user@remote   # remote forward
+ssh -D 1080 user@remote                # dynamic SOCKS proxy
+```
+
+### SSH keygen & agent
+
+```bash
+ssh-keygen -t rsa -b 4096 -C "you@example.com"
+ssh-copy-id user@host
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_rsa
+```
+
+---
+
+## 11. Tools Penting untuk CTF / Pentest
+
+```bash
+# Network & scanning
+nmap -sC -sV -p- -oA scan 192.168.1.0/24
+masscan 192.168.1.0/24 -p0-65535 --rate=1000
+
+# Web
+sqlmap -u "http://target/vuln.php?id=1" --batch
+dirb http://target/ /usr/share/wordlists/dirb/common.txt
+gobuster dir -u http://target -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt
+
+# Reverse / Binary
+ghidra, radare2, rizin, objdump, strings, ltrace, strace
+gdb -q ./binary
+pwntools (python) untuk exploit scripting
+
+# Crypto
+hashcat -m 0 -a 0 hash.txt /usr/share/wordlists/rockyou.txt
+john --wordlist=/usr/share/wordlists/rockyou.txt hash.txt
+
+# Forensics / stego
+exiftool image.jpg
+binwalk firmware.bin
+steghide extract -sf image.jpg
+zsteg image.png
+foremost -i image.jpg -o extracted_files
+```
+
+---
+
+## 12. Scripting Bash & One-Liners Python
+
+### Bash basics
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+IFS=$'\n\t'
+
+for f in /path/*.txt; do
+  echo "Processing $f"
+done
+```
+
+### Useful one-liners
+
+```bash
+# Serve current dir via HTTP (python)
+python3 -m http.server 8000
+
+# Find files and print last line
+find . -name "*.log" -exec sh -c 'printf "%s\n" "{}"; tail -n 1 "{}"' \;
+
+# Base64 decode all files in folder and grep flag
+for f in *; do base64 -d "$f" 2>/dev/null | grep -a "flag{" && echo "$f"; done
+```
+
+### Python quick scripts
+
+```python
+# kecil: base64 decode and print
+import sys,base64
+print(base64.b64decode(sys.stdin.read()).decode())
+```
+
+---
+
+## 13. Systemd, Services & Boot
+
+```bash
+systemctl status
+systemctl list-units --type=service --state=running
+systemctl enable nginx
+systemctl disable apache2
+systemctl is-enabled ssh
+
+# Boot
+sudo grub-mkconfig -o /boot/grub/grub.cfg
+sudo update-grub
+```
+
+### Rescue / Single-user mode
+- Tambahkan `single` atau `init=/bin/bash` pada kernel parameter saat boot melalui grub untuk akses pemulihan (berguna di lab, hati-hati di production).
+
+---
+
+## 14. Kontainerisasi (Docker) & Virtualisasi singkat
+
+```bash
+# Docker basic
+docker run -it --rm ubuntu:22.04 bash
+docker ps -a
+docker images
+docker exec -it container_name bash
+docker build -t myimage:latest .
+
+# Docker networking
+docker network ls
+docker network inspect bridge
+
+# Virtualization (libvirt / virt-manager)
+virsh list --all
+virt-install --name vm ...
+```
+
+---
+
+## 15. Forensik & Tanda-tanda Investigasi
+
+```bash
+# Timeline
+ls -lt --time=ctime /path
+stat suspicious_file
+
+# Network artifacts
+tcpdump -nn -r capture.pcap
+strings memory_dump | less
+
+# User activity
+last
+lastlog
+who
+w
+grep 'sudo' /var/log/auth.log
+
+# Persistence / autorun common places
+crontab -l
+ls -la /etc/cron*
+systemctl list-unit-files | grep enabled
+cat /etc/rc.local
+```
+
+---
+
+## 16. Kernel, Modul & Sysctl
+
+```bash
+uname -a
+cat /proc/cpuinfo
+cat /proc/meminfo
+lsmod
+modprobe module_name
+dmesg | tail -n 50
+
+# sysctl
+sysctl -a | grep net.ipv4.ip_forward
+sudo sysctl -w net.ipv4.ip_forward=1
+echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
+```
+
+---
+
+## 17. Editor & Produktivitas (vim, tmux)
+
+```bash
+# vim basics
+vim file.txt
+i      # insert mode
+Esc :wq   # save & quit
+Esc :q!   # quit without save
+:%s/old/new/g
+
+# tmux basics
+tmux new -s session
+tmux ls
+tmux attach -t session
+Ctrl-b c  # new window
+Ctrl-b %  # split vertical
+```
+
+Tips: gunakan `~/.vimrc` sederhana: `set number`, `syntax on`, `set expandtab`.
+
+---
+
+## 18. Keamanan Praktis & Hardening singkat
+
+- Selalu patch: `sudo apt update && sudo apt upgrade -y`
+- Nonaktifkan root login via SSH: edit `/etc/ssh/sshd_config` `PermitRootLogin no`
+- Gunakan UFW/iptables: `ufw allow 22/tcp`, `ufw enable`
+- Batasi user dengan `sudo` dan gunakan `sudo -l` untuk audit
+- Gunakan 2FA untuk layanan penting
+- Audit login: konfigurasi `fail2ban` untuk mencegah brute-force
+- Enkripsi disk: gunakan LUKS untuk laptop/drive sensitif
+- Minimalisasi service yang berjalan `systemctl list-unit-files --state=enabled`
+
+---
+
+## 19. Path & File penting di Linux
+
+- `/etc/passwd` — user accounts (public)
+- `/etc/shadow` — password hashes (root only)
+- `/etc/sudoers` — sudo rules
+- `/var/log/` — log files
+- `/var/www/` — web root (umumnya)
+- `/home/username/` — home user
+- `/proc/`, `/sys/` — virtual filesystems kernel
+- `/boot/` — kernel & grub config
+- `/etc/ssh/sshd_config` — ssh server config
+
+---
+
+## 20. Referensi dan Best Practices
+
+- Baca `man` pages: `man ls`, `man ssh`
+- Dokumentasi resmi: kernel.org, distro docs (Ubuntu, Debian, Arch)
+- Buku: "The Linux Command Line" by William Shotts, "Linux Hardening in Hostile Networks"
+- Tools online: GTFOBins (SUID abuse), Exploit-DB (untuk lab), tldr.sh (ringkasan perintah)
+- Etika: selalu minta izin sebelum testing. Gunakan lab/VM untuk latihan exploit.
+
+---
+
+## Shortcut & Ringkasan Keyboard
+
+| Shortcut | Aksi |
+|---|---|
+| Ctrl+C | Hentikan proses |
+| Ctrl+Z | Suspend |
+| Ctrl+D | Logout / EOF |
+| Ctrl+L | Clear screen |
+| Ctrl+R | Reverse search history |
+| !! | Repeat last command |
+| !$ | Last argument previous command |
+
+---
+
+## Penutup
+
+Cheatsheet ini dirancang sebagai referensi cepat. Untuk tiap topik ada banyak sub-perintah dan opsi — pelajari `man` dan dokumentasi tools yang relevan. Selamat belajar dan ingat: gunakan kemampuan ini secara etis.
+
+--- 
+**Tags:** #linux #cheatsheet #terminal #ctf #sysadmin #tenesys
