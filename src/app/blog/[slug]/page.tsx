@@ -10,7 +10,6 @@ import {
 import { getRelatedPosts } from "@/lib/blog";
 import BlogPostClient from "./page-client";
 
-// ISR optional, biar stabil di Vercel build
 export const revalidate = 60;
 
 export async function generateStaticParams() {
@@ -19,10 +18,12 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata(
-  { params }: { params: { slug: string } },
+  props: any,
   _parent?: ResolvingMetadata
 ): Promise<Metadata> {
-  const post = getBlogPostBySlug(params.slug);
+  const { slug } = (await props.params) || props.params || {}; // ✅ handle both Promise/object
+  const post = getBlogPostBySlug(slug);
+
   if (!post) {
     return { title: "Post Not Found" };
   }
@@ -48,20 +49,19 @@ export async function generateMetadata(
   };
 }
 
-export default function BlogPostPage({
-  params,
-}: {
-  params: { slug: string };
-}) {
-  const post = getBlogPostBySlug(params.slug);
+export default async function BlogPostPage(props: any) {
+  // 🔧 Handle either Promise or direct params
+  const resolvedParams = (await props.params) || props.params;
+  const { slug } = resolvedParams || {};
+
+  const post = getBlogPostBySlug(slug);
   if (!post) notFound();
 
-  const mdxSource = serializeMDX(post.content);
-
+  const mdxSource = await serializeMDX(post.content);
   const allPosts = getAllBlogPosts();
   const relatedPosts = getRelatedPosts(post, allPosts, 3);
 
-  const currentIndex = allPosts.findIndex((p) => p.slug === params.slug);
+  const currentIndex = allPosts.findIndex((p) => p.slug === slug);
   const prevPost =
     currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null;
   const nextPost =
@@ -70,7 +70,6 @@ export default function BlogPostPage({
   return (
     <BlogPostClient
       post={post}
-      // @ts-expect-error: serializeMDX is async-safe in client
       mdxSource={mdxSource}
       relatedPosts={relatedPosts}
       prevPost={prevPost}
