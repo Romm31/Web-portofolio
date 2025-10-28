@@ -6,9 +6,9 @@ import { getRelatedPosts } from '@/lib/blog';
 import BlogPostClient from './page-client';
 
 interface BlogPostPageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 // Generate static params for all blog posts
@@ -18,8 +18,9 @@ export function generateStaticParams() {
 }
 
 // Generate metadata for SEO
-export function generateMetadata({ params }: BlogPostPageProps): Metadata {
-  const post = getBlogPostBySlug(params.slug);
+export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const post = getBlogPostBySlug(slug);
 
   if (!post) {
     return {
@@ -49,7 +50,8 @@ export function generateMetadata({ params }: BlogPostPageProps): Metadata {
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
-  const post = getBlogPostBySlug(params.slug);
+  const { slug } = await params;
+  const post = getBlogPostBySlug(slug);
 
   if (!post) {
     notFound();
@@ -63,7 +65,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const relatedPosts = getRelatedPosts(post, allPosts, 3);
 
   // Get prev/next posts
-  const currentIndex = allPosts.findIndex((p) => p.slug === params.slug);
+  const currentIndex = allPosts.findIndex((p) => p.slug === slug);
   const prevPost = currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null;
   const nextPost = currentIndex > 0 ? allPosts[currentIndex - 1] : null;
 
