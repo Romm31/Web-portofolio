@@ -1,5 +1,5 @@
 // src/app/blog/[slug]/page.tsx
-import type { Metadata, ResolvingMetadata } from "next";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
   getBlogPostBySlug,
@@ -10,6 +10,7 @@ import {
 import { getRelatedPosts } from "@/lib/blog";
 import BlogPostClient from "./page-client";
 
+// Optional: biar aman di ISR mode
 export const revalidate = 60;
 
 export async function generateStaticParams() {
@@ -17,11 +18,9 @@ export async function generateStaticParams() {
   return slugs.map((slug) => ({ slug }));
 }
 
-export async function generateMetadata(
-  props: any,
-  _parent?: ResolvingMetadata
-): Promise<Metadata> {
-  const { slug } = (await props.params) || props.params || {}; // ✅ handle both Promise/object
+// 🩹 FIX: drop ResolvingMetadata type karena broken di Next 15.5.x
+export async function generateMetadata({ params }: any): Promise<Metadata> {
+  const slug = (await params?.slug) ?? params?.slug;
   const post = getBlogPostBySlug(slug);
 
   if (!post) {
@@ -49,10 +48,9 @@ export async function generateMetadata(
   };
 }
 
-export default async function BlogPostPage(props: any) {
-  // 🔧 Handle either Promise or direct params
-  const resolvedParams = (await props.params) || props.params;
-  const { slug } = resolvedParams || {};
+export default async function BlogPostPage({ params }: any) {
+  const resolvedParams = (await params) || params;
+  const slug = resolvedParams?.slug;
 
   const post = getBlogPostBySlug(slug);
   if (!post) notFound();
