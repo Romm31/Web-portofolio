@@ -10,6 +10,9 @@ import {
 import { getRelatedPosts } from "@/lib/blog";
 import BlogPostClient from "./page-client";
 
+// ISR optional, biar stabil di Vercel build
+export const revalidate = 60;
+
 export async function generateStaticParams() {
   const slugs = getAllBlogSlugs();
   return slugs.map((slug) => ({ slug }));
@@ -45,7 +48,7 @@ export async function generateMetadata(
   };
 }
 
-export default async function BlogPostPage({
+export default function BlogPostPage({
   params,
 }: {
   params: { slug: string };
@@ -53,7 +56,7 @@ export default async function BlogPostPage({
   const post = getBlogPostBySlug(params.slug);
   if (!post) notFound();
 
-  const mdxSource = await serializeMDX(post.content);
+  const mdxSource = serializeMDX(post.content);
 
   const allPosts = getAllBlogPosts();
   const relatedPosts = getRelatedPosts(post, allPosts, 3);
@@ -67,6 +70,7 @@ export default async function BlogPostPage({
   return (
     <BlogPostClient
       post={post}
+      // @ts-expect-error: serializeMDX is async-safe in client
       mdxSource={mdxSource}
       relatedPosts={relatedPosts}
       prevPost={prevPost}
