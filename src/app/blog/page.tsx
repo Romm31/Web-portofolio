@@ -1,5 +1,5 @@
 // src/app/blog/page.tsx
-import { Navbar } from "@/components/navbar";
+import { Navbar } from "@/components/blog/navbar";
 import { getAllBlogPosts, getAllTags } from "@/lib/mdx";
 import BlogClient from "./page-client";
 
