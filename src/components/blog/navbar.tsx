@@ -48,11 +48,11 @@ export function Navbar() {
 
   // Navigation config
   const navLinks = [
-    { name: "Home", href: "/#home", icon: Home, section: "home" },
-    { name: "Skills", href: "/#skills", icon: Award, section: "skills" },
-    { name: "Projects", href: "/#projects", icon: Code2, section: "projects" },
-    { name: "Experience", href: "/#experience", icon: Briefcase, section: "experience" },
-    { name: "Contact", href: "/#contact", icon: Mail, section: "contact" },
+    { name: "Home", href: "/", icon: Home, section: "home" },
+    { name: "Skills", href: "/", icon: Award, section: "skills" },
+    { name: "Projects", href: "/", icon: Code2, section: "projects" },
+    { name: "Experience", href: "/", icon: Briefcase, section: "experience" },
+    { name: "Contact", href: "/", icon: Mail, section: "contact" },
   ]
 
   const pageLinks = [
