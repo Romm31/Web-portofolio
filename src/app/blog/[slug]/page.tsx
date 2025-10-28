@@ -1,5 +1,5 @@
 // src/app/blog/[slug]/page.tsx
-import { Metadata } from "next";
+import type { Metadata, ResolvingMetadata } from "next";
 import { notFound } from "next/navigation";
 import {
   getBlogPostBySlug,
@@ -10,30 +10,18 @@ import {
 import { getRelatedPosts } from "@/lib/blog";
 import BlogPostClient from "./page-client";
 
-
-interface BlogPostPageProps {
-  params: {
-    slug: string;
-  };
-}
-
-export function generateStaticParams() {
+export async function generateStaticParams() {
   const slugs = getAllBlogSlugs();
-  return slugs.map((slug: string) => ({ slug }));
+  return slugs.map((slug) => ({ slug }));
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { slug: string };
-}): Promise<Metadata> {
-  const { slug } = params;
-  const post = getBlogPostBySlug(slug);
-
+export async function generateMetadata(
+  { params }: { params: { slug: string } },
+  _parent?: ResolvingMetadata
+): Promise<Metadata> {
+  const post = getBlogPostBySlug(params.slug);
   if (!post) {
-    return {
-      title: "Post Not Found",
-    };
+    return { title: "Post Not Found" };
   }
 
   return {
@@ -57,10 +45,12 @@ export async function generateMetadata({
   };
 }
 
-export default async function BlogPostPage({ params }: BlogPostPageProps) {
-  const { slug } = params;
-  const post = getBlogPostBySlug(slug);
-
+export default async function BlogPostPage({
+  params,
+}: {
+  params: { slug: string };
+}) {
+  const post = getBlogPostBySlug(params.slug);
   if (!post) notFound();
 
   const mdxSource = await serializeMDX(post.content);
@@ -68,7 +58,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const allPosts = getAllBlogPosts();
   const relatedPosts = getRelatedPosts(post, allPosts, 3);
 
-  const currentIndex = allPosts.findIndex((p) => p.slug === slug);
+  const currentIndex = allPosts.findIndex((p) => p.slug === params.slug);
   const prevPost =
     currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null;
   const nextPost =
