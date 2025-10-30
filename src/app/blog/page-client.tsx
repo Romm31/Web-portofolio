@@ -76,7 +76,7 @@ export default function BlogClient({ allPosts, allTags }: BlogContentProps) {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent"
         >
-          Blog & Notes
+          Blogs
         </motion.h1>
 
         <motion.p
