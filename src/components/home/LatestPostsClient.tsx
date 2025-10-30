@@ -90,29 +90,50 @@ export default function LatestPostsClient({ posts }: LatestPostsClientProps) {
             <span>Latest Writings</span>
           </motion.div>
 
-          <div className="flex items-center justify-between max-w-6xl mx-auto">
-            <div className="flex-1 text-center md:text-left">
-              <h2 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight">
-                From the{" "}
-                <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                  Blog
-                </span>
-              </h2>
-              <p className="text-base sm:text-lg text-muted-foreground mt-4 max-w-2xl mx-auto md:mx-0">
-                Thoughts on cybersecurity, CTF writeups, and technical deep dives
-              </p>
-            </div>
-
-            {/* Swipe hint for mobile */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="hidden sm:flex md:hidden items-center gap-2 text-sm text-muted-foreground"
+          {/* Icon like Featured Projects */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center"
+          >
+            <svg
+              className="w-8 h-8 sm:w-10 sm:h-10 text-primary"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              <span>Swipe</span>
-              <ChevronRight className="w-5 h-5 animate-pulse" />
-            </motion.div>
-          </div>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+              />
+            </svg>
+          </motion.div>
+
+          {/* Title - Centered */}
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-center">
+            From the{" "}
+            <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              Blog
+            </span>
+          </h2>
+          
+          <p className="text-base sm:text-lg text-muted-foreground mt-4 max-w-2xl mx-auto text-center">
+            Thoughts on cybersecurity, CTF writeups, and technical deep dives
+          </p>
+
+          {/* Swipe hint for mobile - Bottom center */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex md:hidden justify-center items-center gap-2 text-sm text-muted-foreground mt-4"
+          >
+            <span>Swipe to explore</span>
+            <ChevronRight className="w-5 h-5 animate-pulse" />
+          </motion.div>
         </motion.div>
 
         {/* Posts */}
