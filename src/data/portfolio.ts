@@ -62,22 +62,6 @@ export const projects = [
     tags: ["Webhook", "Automation", "Discord"],
     link: "https://github.com/Romm31/GZCTF-Discord-Webhooks",
   },
-  {
-    id: 5,
-    title: "Another Project Idea",
-    description:
-      "This is another placeholder project to demonstrate more cards.",
-    tags: ["New", "Idea", "Fullstack"],
-    link: "https://github.com/Romm31/example",
-  },
-  {
-    id: 6,
-    title: "Portfolio Website V1",
-    description:
-      "The initial version of my personal portfolio website, showcasing early work.",
-    tags: ["Web Dev", "Design", "React"],
-    link: "https://github.com/Romm31/old-portfolio",
-  },
 ]
 
 // --- SKILLS DATA ---
@@ -156,6 +140,11 @@ export const organizationData = [
 ] as const
 
 export const achievementsData = [
+  {
+  year: 2025,
+  title: "Challenge Author at LaosCTF 2025 — Universitas Jember",
+  detail: "Problem Setter / Challenge Creator in Cyber Security Field",
+},
   {
     year: 2025,
     title: "1st Place CTF Event HUT Pesawaran, Lampung",
