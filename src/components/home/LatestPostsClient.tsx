@@ -2,19 +2,18 @@
 
 import React from "react";
 import Link from "next/link";
-import Image from "next/image"; // <--- Import Image dari Next.js
+import Image from "next/image";
 import { motion } from "framer-motion";
-import { ArrowRight, Calendar, Clock, Tag, Sparkles } from "lucide-react";
+import { ArrowRight, Calendar, Clock, Tag, Sparkles, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/blog";
 
-// Tipe datanya sekarang ada di sini
 export interface BlogFrontmatter {
   title: string;
   date: string;
   summary: string;
   tags?: string[];
-  image?: string; // Pastikan ada properti 'image'
+  image?: string;
   featured?: boolean;
 }
 
@@ -28,19 +27,6 @@ interface LatestPostsClientProps {
   posts: BlogPost[];
 }
 
-// Animasi untuk container
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
-    },
-  },
-};
-
-// Animasi untuk tiap card
 const cardVariants = {
   hidden: { opacity: 0, y: 30 },
   visible: {
@@ -91,7 +77,7 @@ export default function LatestPostsClient({ posts }: LatestPostsClientProps) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16 space-y-4"
+          className="text-center mb-12 md:mb-16 space-y-4"
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
@@ -104,19 +90,32 @@ export default function LatestPostsClient({ posts }: LatestPostsClientProps) {
             <span>Latest Writings</span>
           </motion.div>
 
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight">
-            From the{" "}
-            <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-              Blog
-            </span>
-          </h2>
+          <div className="flex items-center justify-between max-w-6xl mx-auto">
+            <div className="flex-1 text-center md:text-left">
+              <h2 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight">
+                From the{" "}
+                <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                  Blog
+                </span>
+              </h2>
+              <p className="text-base sm:text-lg text-muted-foreground mt-4 max-w-2xl mx-auto md:mx-0">
+                Thoughts on cybersecurity, CTF writeups, and technical deep dives
+              </p>
+            </div>
 
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Thoughts on cybersecurity, CTF writeups, and technical deep dives
-          </p>
+            {/* Swipe hint for mobile */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="hidden sm:flex md:hidden items-center gap-2 text-sm text-muted-foreground"
+            >
+              <span>Swipe</span>
+              <ChevronRight className="w-5 h-5 animate-pulse" />
+            </motion.div>
+          </div>
         </motion.div>
 
-        {/* Posts Grid */}
+        {/* Posts */}
         {posts.length === 0 ? (
           <motion.div
             initial={{ opacity: 0 }}
@@ -138,116 +137,54 @@ export default function LatestPostsClient({ posts }: LatestPostsClientProps) {
             </Link>
           </motion.div>
         ) : (
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            className="grid gap-6 md:gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
-          >
-            {posts.map((post) => (
-              <motion.article
-                key={post.slug}
-                variants={cardVariants}
-                whileHover={{ y: -8 }}
-                transition={{ duration: 0.3 }}
-                className="group relative"
-              >
-                <Link href={`/blog/${post.slug}`} className="block h-full">
-                  <div className="h-full rounded-2xl border border-border bg-card hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 relative overflow-hidden">
-                    {/* Image (kalau ada) */}
-                    {post.frontmatter.image && (
-                      <div className="relative w-full h-48 overflow-hidden bg-muted">
-                        <Image
-                          src={post.frontmatter.image}
-                          alt={post.frontmatter.title}
-                          fill
-                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // Optimalisasi gambar
-                          className="object-cover transition-transform duration-300 group-hover:scale-105"
-                          priority={post.frontmatter.featured} // Load featured image lebih awal
-                        />
-                         {post.frontmatter.featured && (
-                          <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-semibold">
-                            Featured
-                          </div>
-                        )}
-                      </div>
-                    )}
+          <>
+            {/* Mobile: Horizontal Scroll */}
+            <div className="md:hidden">
+              <div className="flex gap-4 overflow-x-auto pb-8 snap-x snap-mandatory scrollbar-hide -mx-4 px-4">
+                {posts.map((post, index) => (
+                  <motion.article
+                    key={post.slug}
+                    initial={{ opacity: 0, x: 50 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true, margin: "-50px" }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    className="flex-shrink-0 w-[85vw] sm:w-96 snap-start"
+                  >
+                    <BlogPostCard post={post} />
+                  </motion.article>
+                ))}
+              </div>
 
-                    {/* Hover gradient effect */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/0 via-primary/0 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              {/* Scroll indicator dots */}
+              <div className="flex justify-center gap-2 mt-4">
+                {posts.map((_, index) => (
+                  <div
+                    key={index}
+                    className="w-2 h-2 rounded-full bg-primary/30"
+                  />
+                ))}
+              </div>
+            </div>
 
-                    {/* Content */}
-                    <div className="relative p-6 sm:p-8 space-y-4"> {/* Padding dipindah ke sini */}
-                      {/* Tags */}
-                      {post.frontmatter.tags &&
-                        post.frontmatter.tags.length > 0 && (
-                          <div className="flex flex-wrap gap-2">
-                            {/* Tambahan || [] untuk menghindari error jika tags undefined */}
-                            {(post.frontmatter.tags || []).slice(0, 2).map((tag) => ( 
-                              <Badge
-                                key={tag}
-                                variant="secondary"
-                                className="px-2.5 py-1 text-xs font-medium"
-                              >
-                                <Tag className="w-3 h-3 mr-1" />
-                                {tag}
-                              </Badge>
-                            ))}
-                            {(post.frontmatter.tags || []).length > 2 && ( // cek lagi length nya
-                              <Badge
-                                variant="secondary"
-                                className="px-2.5 py-1 text-xs"
-                              >
-                                +{(post.frontmatter.tags || []).length - 2}
-                              </Badge>
-                            )}
-                          </div>
-                        )}
-
-                      {/* Title */}
-                      <h3 className="text-xl sm:text-2xl font-bold tracking-tight line-clamp-2 group-hover:text-primary transition-colors">
-                        {post.frontmatter.title}
-                      </h3>
-
-                      {/* Summary */}
-                      <p className="text-sm sm:text-base text-muted-foreground leading-relaxed line-clamp-3">
-                        {post.frontmatter.summary}
-                      </p>
-
-                      {/* Meta Info */}
-                      <div className="flex items-center gap-4 text-xs sm:text-sm text-muted-foreground pt-4 border-t border-border/50">
-                        <div className="flex items-center gap-1.5">
-                          <Calendar className="w-4 h-4" />
-                          <span>{formatDate(post.frontmatter.date)}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <Clock className="w-4 h-4" />
-                          <span>{post.readingTime}</span>
-                        </div>
-                      </div>
-
-                      {/* Read More Link */}
-                      <div className="flex items-center gap-2 text-primary font-medium group-hover:gap-3 transition-all pt-2">
-                        <span className="text-sm sm:text-base">Read Article</span>
-                        <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
-                      </div>
-                    </div>
-
-                    {/* Featured badge (dipindah ke sini agar tidak tumpang tindih dengan gambar) */}
-                    {!post.frontmatter.image && post.frontmatter.featured && ( // Tampilkan hanya jika tidak ada gambar
-                      <div className="absolute top-4 right-4">
-                        <Badge className="bg-primary text-primary-foreground shadow-lg">
-                          <Sparkles className="w-3 h-3 mr-1" />
-                          Featured
-                        </Badge>
-                      </div>
-                    )}
-                  </div>
-                </Link>
-              </motion.article>
-            ))}
-          </motion.div>
+            {/* Desktop: Grid */}
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
+            >
+              {posts.map((post, index) => (
+                <motion.article
+                  key={post.slug}
+                  variants={cardVariants}
+                  custom={index}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <BlogPostCard post={post} />
+                </motion.article>
+              ))}
+            </motion.div>
+          </>
         )}
 
         {/* View All Link */}
@@ -272,6 +209,123 @@ export default function LatestPostsClient({ posts }: LatestPostsClientProps) {
           </motion.div>
         )}
       </div>
+
+      {/* Custom scrollbar hide */}
+      <style jsx global>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </section>
+  );
+}
+
+// Reusable Blog Post Card Component
+function BlogPostCard({ post }: { post: BlogPost }) {
+  return (
+    <Link href={`/blog/${post.slug}`} className="block group h-full">
+      <motion.div
+        whileHover={{ y: -8 }}
+        transition={{ duration: 0.3 }}
+        className="h-full rounded-2xl border border-border bg-card hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 relative overflow-hidden"
+      >
+        {/* Image */}
+        {post.frontmatter.image && (
+          <div className="relative w-full h-48 sm:h-56 overflow-hidden bg-muted">
+            <Image
+              src={post.frontmatter.image}
+              alt={post.frontmatter.title}
+              fill
+              sizes="(max-width: 768px) 85vw, (max-width: 1200px) 50vw, 33vw"
+              className="object-cover transition-transform duration-500 group-hover:scale-110"
+              priority={post.frontmatter.featured}
+            />
+            {/* Gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            
+            {post.frontmatter.featured && (
+              <div className="absolute top-4 left-4 z-10">
+                <Badge className="bg-primary text-primary-foreground shadow-lg backdrop-blur-sm">
+                  <Sparkles className="w-3 h-3 mr-1" />
+                  Featured
+                </Badge>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Hover gradient effect */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/0 via-primary/0 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+        {/* Content */}
+        <div className="relative p-6 space-y-3">
+          {/* Tags */}
+          {post.frontmatter.tags && post.frontmatter.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {post.frontmatter.tags.slice(0, 2).map((tag) => (
+                <Badge
+                  key={tag}
+                  variant="secondary"
+                  className="px-2.5 py-1 text-xs font-medium hover:bg-primary/20 transition-colors"
+                >
+                  <Tag className="w-3 h-3 mr-1" />
+                  {tag}
+                </Badge>
+              ))}
+              {post.frontmatter.tags.length > 2 && (
+                <Badge variant="secondary" className="px-2.5 py-1 text-xs">
+                  +{post.frontmatter.tags.length - 2}
+                </Badge>
+              )}
+            </div>
+          )}
+
+          {/* Title */}
+          <h3 className="text-xl sm:text-2xl font-bold tracking-tight line-clamp-2 group-hover:text-primary transition-colors min-h-[3.5rem]">
+            {post.frontmatter.title}
+          </h3>
+
+          {/* Summary */}
+          <p className="text-sm sm:text-base text-muted-foreground leading-relaxed line-clamp-2 min-h-[2.5rem]">
+            {post.frontmatter.summary}
+          </p>
+
+          {/* Meta Info */}
+          <div className="flex items-center justify-between pt-4 border-t border-border/50">
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1">
+                <Calendar className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">{formatDate(post.frontmatter.date)}</span>
+                <span className="sm:hidden">{new Date(post.frontmatter.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5" />
+                <span>{post.readingTime}</span>
+              </div>
+            </div>
+
+            {/* Read More Arrow */}
+            <div className="flex items-center gap-1 text-primary font-medium group-hover:gap-2 transition-all">
+              <span className="text-sm hidden sm:inline">Read</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </div>
+        </div>
+
+        {/* Featured badge (jika tidak ada image) */}
+        {!post.frontmatter.image && post.frontmatter.featured && (
+          <div className="absolute top-4 right-4">
+            <Badge className="bg-primary text-primary-foreground shadow-lg">
+              <Sparkles className="w-3 h-3 mr-1" />
+              Featured
+            </Badge>
+          </div>
+        )}
+      </motion.div>
+    </Link>
   );
 }
